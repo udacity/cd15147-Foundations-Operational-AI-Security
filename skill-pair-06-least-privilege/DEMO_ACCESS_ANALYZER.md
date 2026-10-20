@@ -34,7 +34,29 @@ Knowledge bases, harnesses, and gateways aren't on that list. Aria's documents a
 An **access preview** shows the findings that a policy would create, without applying the policy.
 
 1. Create the analyzer if you don't have one. In IAM, choose **Access Analyzer**, and create an analyzer of type **Account** named `vantage-aria-analyzer`. This type of analyzer is free.
-2. Create an **access preview** for a bucket policy on the Aria knowledge base bucket. In S3, open `vantage-aria-kb-<suffix>`, and choose **Permissions** > **Bucket policy** > **Edit**. Paste a bucket policy that grants account `111122223333` `s3:GetObject` and `s3:ListBucket`, and choose **Preview external access**. Don't save the policy.
+2. Create an **access preview** for a bucket policy on the Aria knowledge base bucket. In S3, open `vantage-aria-kb-<suffix>`, and choose **Permissions** > **Bucket policy** > **Edit**. Paste this bucket policy, which grants account `111122223333` `s3:ListBucket` on the bucket and `s3:GetObject` on its objects. Replace `vantage-aria-kb-<suffix>` in both `Resource` lines with your bucket's name, which the editor shows in the **Bucket ARN** above the policy. Then choose **Preview external access**. Don't save the policy.
+
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Sid": "PreviewCrossAccountList",
+         "Effect": "Allow",
+         "Principal": { "AWS": "arn:aws:iam::111122223333:root" },
+         "Action": "s3:ListBucket",
+         "Resource": "arn:aws:s3:::vantage-aria-kb-<suffix>"
+       },
+       {
+         "Sid": "PreviewCrossAccountRead",
+         "Effect": "Allow",
+         "Principal": { "AWS": "arn:aws:iam::111122223333:root" },
+         "Action": "s3:GetObject",
+         "Resource": "arn:aws:s3:::vantage-aria-kb-<suffix>/*"
+       }
+     ]
+   }
+   ```
 
 The preview shows a **new, active** external-access finding. The policy itself is never applied.
 
