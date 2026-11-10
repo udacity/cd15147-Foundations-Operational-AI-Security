@@ -23,7 +23,7 @@ Before the system goes live in a production clinical environment, the Chief Info
 ClinicalCompanion uses two AI models:
 
 - **Amazon Titan Text Embeddings V2** — converts clinical staff queries and knowledge base documents into vector embeddings, which are stored and searched in a Managed Knowledge Base vector store. Accessed via Amazon Bedrock as a managed service.
-- **Anthropic Claude Sonnet 4.5** — receives the clinical staff member's original question plus the top retrieved document chunks and generates a grounded natural-language answer with citations.
+- **Anthropic Claude Sonnet 4.6** — receives the clinical staff member's original question plus the top retrieved document chunks and generates a grounded natural-language answer with citations.
 
 Both models are accessed as managed API services through AWS Bedrock. Neither runs on Cascadia Health's own infrastructure.
 
@@ -32,7 +32,7 @@ Both models are accessed as managed API services through AWS Bedrock. Neither ru
 ## Tools
 
 - `starter/ML_BOM_TEMPLATE.md` — your starting point; save your completed version as `ML_BOM_COMPLETED.md`
-- The harness configuration — the **Configs** panel in the Harness playground or the `GetHarness` API — to confirm the saved model ID and inference profile (Amazon Bedrock no longer has a model access page)
+- The harness configuration — the **Configs** panel in the Playground or the `GetHarness` API — to confirm the saved model ID and inference profile (Amazon Bedrock no longer has a model access page)
 - Anthropic model documentation: https://docs.anthropic.com/en/docs/about-claude/models
 - Amazon Titan Embeddings documentation: https://docs.aws.amazon.com/bedrock/latest/userguide/titan-embedding-models.html
 
@@ -54,13 +54,13 @@ Answer these questions as you fill it in:
 
 ---
 
-### Task 2 — Document Model 2: Anthropic Claude Sonnet 4.5
+### Task 2 — Document Model 2: Anthropic Claude Sonnet 4.6
 
 Fill in all fields in the Model 2 section.
 
 Answer these questions as you fill it in:
 
-- **Training data:** Claude Sonnet 4.5 is a managed API, and Anthropic doesn't disclose the composition of its training dataset. What can you record as known, and what must you record as not disclosed? In a HIPAA risk assessment, what can't Cascadia Health verify because of that gap?
+- **Training data:** Claude Sonnet 4.6 is a managed API, and Anthropic doesn't disclose the composition of its training dataset. What can you record as known, and what must you record as not disclosed? In a HIPAA risk assessment, what can't Cascadia Health verify because of that gap?
 - **Architecture:** What architecture does the model use, and which alignment method has Anthropic published? Why does the alignment method matter when someone sends the model an adversarial prompt?
 - **Input and output:** What goes into the model's input in this RAG system? What are the maximum input and output sizes? Check the Anthropic model documentation.
 - **Misuse:** Cover these three, and describe each one for a clinical setting:
@@ -89,7 +89,7 @@ For each model, what is publicly known about its parent model, its base model, a
 
 Fill in the attestation table (preparer, date, review date, attestation statement).
 
-Write a 2-sentence system overview explaining how Titan Text Embeddings V2 and Claude Sonnet 4.5 work together in the ClinicalCompanion RAG pipeline. Make clear that these are two distinct models with distinct security failure modes: a failure in the embedding model threatens what clinical content reaches the generation model; a failure in the generation model threatens what clinical information is returned to the clinician.
+Write a 2-sentence system overview explaining how Titan Text Embeddings V2 and Claude Sonnet 4.6 work together in the ClinicalCompanion RAG pipeline. Make clear that these are two distinct models with distinct security failure modes: a failure in the embedding model threatens what clinical content reaches the generation model; a failure in the generation model threatens what clinical information is returned to the clinician.
 
 ---
 

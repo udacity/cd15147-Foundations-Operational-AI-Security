@@ -61,7 +61,7 @@ For security teams, the ML-BOM serves three functions:
 | Field | Value |
 |---|---|
 | Architecture Type | *[e.g., Transformer encoder, Decoder-only transformer, CNN, etc.]* |
-| Model Family | *[e.g., Titan Embeddings, Claude Sonnet 4.5]* |
+| Model Family | *[e.g., Titan Embeddings, Claude Sonnet 4.6]* |
 
 ---
 
@@ -133,7 +133,7 @@ For security teams, the ML-BOM serves three functions:
 | Field | Value |
 |---|---|
 | Model Name | *[Full model name]* |
-| Version / Model ID | *[Version string or Bedrock model ID, e.g., us.anthropic.claude-sonnet-4-5-20250929-v1:0 (inference profile) / anthropic.claude-sonnet-4-5-20250929-v1:0 (foundation model)]* |
+| Version / Model ID | *[Version string or Bedrock model ID, e.g., us.anthropic.claude-sonnet-4-6 (inference profile) / anthropic.claude-sonnet-4-6 (foundation model)]* |
 | Model Type | *[e.g., Text generation, Embeddings, Classification]* |
 | Author / Organization | *[Who created the model]* |
 | License | *[License type or usage policy]* |
@@ -167,7 +167,7 @@ For security teams, the ML-BOM serves three functions:
 | Field | Value |
 |---|---|
 | Architecture Type | *[e.g., Decoder-only transformer]* |
-| Model Family | *[e.g., Claude Sonnet 4.5]* |
+| Model Family | *[e.g., Claude Sonnet 4.6]* |
 
 ---
 
@@ -187,7 +187,7 @@ For security teams, the ML-BOM serves three functions:
 |---|---|
 | Input Type | *[e.g., Text]* |
 | Input Format | *[e.g., JSON via Bedrock InvokeModel API (system prompt + messages array)]* |
-| Max Input Size | *[e.g., 200,000 tokens]* |
+| Max Input Size | *[e.g., 1,000,000 tokens]* |
 | Output Type | *[e.g., Text completion]* |
 | Output Format | *[e.g., JSON (completion string)]* |
 | Max Output Size | *[e.g., Up to 64,000 tokens]* |

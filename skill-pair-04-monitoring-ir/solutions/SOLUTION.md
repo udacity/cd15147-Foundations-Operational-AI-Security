@@ -208,12 +208,12 @@ The single most important thing to log in a Bedrock RAG system is the full model
 
 Create the log group before you turn on logging. The role that Bedrock creates for logging can write to an existing log group, but it can't create one.
 
-1. In **CloudWatch**, choose **Logs > Log groups > Create log group**, and enter `/aws/bedrock/novatech-opsguide/invocations`
+1. In **CloudWatch**, choose **Log Management**, then **Actions > Create log group**, and enter `/aws/bedrock/novatech-opsguide/invocations`
 2. Go to **Amazon Bedrock > Settings** and turn on **Model invocation logging**
 3. Keep **Text** selected, choose **CloudWatch Logs only**, and enter the log group name
 4. Choose **Create default role** and enter a role name
 5. Choose **Save settings**. If saving fails with **Failed to validate permissions for log group**, the log group doesn't exist yet
-6. Test: send a prompt to the harness (Harness playground or `invoke_harness`) and check for `ConverseStream` records under the harness execution role
+6. Test: send a prompt to the harness (Playground or `invoke_harness`) and check for `ConverseStream` records under the harness execution role
 
 ### 2. Create a CloudWatch alarm on Bedrock invocation count
 
@@ -221,7 +221,7 @@ Create the log group before you turn on logging. The role that Bedrock creates f
 2. In the left sidebar, click **Alarms > All alarms > Create alarm**
 3. Click **Select metric**
 4. Navigate to **AWS/Bedrock > ModelId**
-5. Find the metric `Invocations` for your model ID (e.g., `us.anthropic.claude-sonnet-4-5-20250929-v1:0`)
+5. Find the metric `Invocations` for your model ID (e.g., `us.anthropic.claude-sonnet-4-6`)
 6. Click **Select metric**
 7. Set:
    - **Period:** 1 hour

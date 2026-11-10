@@ -17,7 +17,7 @@ Aria was built in the console with its default service roles, and it works. Befo
 - AWS Console (IAM, Amazon Bedrock AgentCore)
 - The role's **Last Accessed** tab
 - The IAM JSON policy editor, which runs Access Analyzer policy validation
-- The Harness playground, or `invoke_harness` from the SDK
+- The Playground, or `invoke_harness` from the SDK
 
 ---
 
@@ -32,7 +32,7 @@ Aria was built in the console with its default service roles, and it works. Befo
 
 **The model allow-list is also a security control.** Any caller that can invoke the harness can pass a per-request `model` override. `InvokeHarness` has no condition keys, so a caller policy can't block that. Only the harness role's list of allowed models limits which models an override can run. An override that leaves out the guardrail settings runs with no guardrail at all, unless the harness role denies model calls without it.
 
-**`bedrock:*` doesn't reach AgentCore.** A role allowed only `bedrock:*` on `*` was denied `bedrock-agentcore:InvokeHarness`. The same role could still read guardrails and call Claude Sonnet 4.5 directly. An old `bedrock:*` grant exposes guardrails, knowledge bases, and direct model calls, but not the harness or gateway.
+**`bedrock:*` doesn't reach AgentCore.** A role allowed only `bedrock:*` on `*` was denied `bedrock-agentcore:InvokeHarness`. The same role could still read guardrails and call a model directly. An old `bedrock:*` grant exposes guardrails, knowledge bases, and direct model calls, but not the harness or gateway.
 
 **There's no `bedrock:ModelId` condition key.** Bedrock's model condition keys are `bedrock:ModelArn`, `bedrock:InferenceProfileArn`, and `bedrock:GuardrailIdentifier`. This demo scopes models by resource ARN and uses `bedrock:GuardrailIdentifier` as the second layer.
 
@@ -42,7 +42,7 @@ Aria was built in the console with its default service roles, and it works. Befo
 
 ### Step 1: Open the harness role
 
-In the harness details page, choose the IAM role link. The role `AmazonBedrockAgentCoreHarnessDefaultServiceRole-<suffix>` has two customer managed policies, an execution policy and a gateway policy. Because they're customer managed, you can edit them directly. Read the execution policy and point out the statements Aria never uses.
+On the harness page's **Configuration** tab, under **Version details**, choose the IAM role link. The role `AmazonBedrockAgentCoreHarnessDefaultServiceRole-<suffix>` has two customer managed policies, an execution policy and a gateway policy. Because they're customer managed, you can edit them directly. Read the execution policy and point out the statements Aria never uses.
 
 ### Step 2: Find what's unused with Last Accessed
 
@@ -65,10 +65,10 @@ Add this as an inline policy (**Add permissions → Create inline policy → JSO
       "Effect": "Allow",
       "Action": ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
       "Resource": [
-        "arn:aws:bedrock:us-east-1:<acct>:inference-profile/us.anthropic.claude-sonnet-4-5-20250929-v1:0",
-        "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-sonnet-4-5-20250929-v1:0",
-        "arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-sonnet-4-5-20250929-v1:0",
-        "arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-sonnet-4-5-20250929-v1:0"
+        "arn:aws:bedrock:us-east-1:<acct>:inference-profile/us.anthropic.claude-sonnet-4-6",
+        "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-sonnet-4-6",
+        "arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-sonnet-4-6",
+        "arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-sonnet-4-6"
       ]
     },
     {

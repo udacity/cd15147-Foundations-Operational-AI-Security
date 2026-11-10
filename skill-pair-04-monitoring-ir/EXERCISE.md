@@ -18,7 +18,7 @@ Your job: design a monitoring plan for OpsGuide and write an incident response p
 **OpsGuide architecture:**
 
 ```
-Plant operator terminal → Streamlit app → AgentCore harness (Claude Sonnet 4.5) → AgentCore Gateway → Managed Knowledge Base
+Plant operator terminal → Streamlit app → AgentCore harness (Claude Sonnet 4.6) → AgentCore Gateway → Managed Knowledge Base
 ```
 
 Source documents are stored in S3 and synced to the KB nightly. Model invocation logging is on. The Streamlit app logs the operator's user ID, the terminal ID, and the `runtimeSessionId` it sends with each request. The model invocation log doesn't record the `runtimeSessionId` or `runtimeUserId` your app sends. The session ID in `identity.arn` is a different value that the harness generates. That's why the app keeps its own log. Guardrails are active with prompt attack detection, a sensitive information filter, and a topic policy. A contextual grounding check is also enabled, but in testing on harness traffic the guardrail recorded no grounding assessment, so don't rely on it.

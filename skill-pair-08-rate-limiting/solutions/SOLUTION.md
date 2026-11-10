@@ -90,7 +90,7 @@ logger.info(json.dumps({
 **Step 2 — CloudWatch Logs Metric Filter to create a per-customer query count:**
 
 In the CloudWatch console:
-1. Navigate to **Log groups > /aws/orion-api/app-logs**
+1. Navigate to **Log Management > /aws/orion-api/app-logs**
 2. Click **Metric filters > Create metric filter**
 3. **Filter pattern:**
    ```
@@ -165,7 +165,7 @@ These alarms are worth having, but they don't answer the Task 3 question on thei
   "AlarmDescription": "Real-time signal: Bedrock invocations exceeding 500 in any single hour. Budget rate is ~83,333 queries/month / 720 hours = ~116 queries/hour x at least 2 model turns per query = ~230 turns/hour. 500 = about 2x the budget rate.",
   "Namespace": "AWS/Bedrock",
   "MetricName": "Invocations",
-  "Dimensions": [{"Name": "ModelId", "Value": "us.anthropic.claude-sonnet-4-5-20250929-v1:0"}],
+  "Dimensions": [{"Name": "ModelId", "Value": "us.anthropic.claude-sonnet-4-6"}],
   "Statistic": "Sum",
   "Period": 3600,
   "EvaluationPeriods": 1,
@@ -224,7 +224,7 @@ If an enterprise customer's Orion API credentials are stolen and an attacker use
 3. In the search box, type `Bedrock` and press Enter
 4. Click the **AWS/Bedrock** namespace
 5. Open the metrics grouped by the `ModelId` dimension
-6. Find `Invocations` for `us.anthropic.claude-sonnet-4-5-20250929-v1:0` (the model ID your harness saved; `GetHarness` shows it)
+6. Find `Invocations` for `us.anthropic.claude-sonnet-4-6` (the model ID your harness saved; `GetHarness` shows it)
 7. Check the box next to the metric and click **Add to graph**
 8. Adjust the time range to see your usage pattern
 
@@ -249,7 +249,7 @@ If an enterprise customer's Orion API credentials are stolen and an attacker use
 
 ### 3. Create a CloudWatch Logs Metric Filter
 
-1. Navigate to **CloudWatch > Log groups**
+1. Navigate to **CloudWatch > Log Management**
 2. Click `/aws/orion-api/app-logs`
 3. Click the **Metric filters** tab
 4. Click **Create metric filter**

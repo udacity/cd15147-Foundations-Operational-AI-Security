@@ -16,7 +16,7 @@ ResearchBot runs on an Amazon Bedrock AgentCore harness. The harness calls a kno
 **Violation 1: `bedrock:*` on `*`**
 - What's wrong: every Bedrock action on every Bedrock resource in the account.
 - What an attacker can do: invoke any foundation model at GenCore Pharma's expense, change or delete guardrails, delete the knowledge base, change model invocation logging, and enumerate Bedrock resources. A caller can also pass a per-request `model` override, and a role that can invoke any model lets that override run anything.
-- What it should be: `bedrock:InvokeModel` and `bedrock:InvokeModelWithResponseStream` on the Claude Sonnet 4.5 inference profile and its foundation model ARNs, a Deny unless the ResearchBot guardrail is applied, and `bedrock:ApplyGuardrail` on that guardrail.
+- What it should be: `bedrock:InvokeModel` and `bedrock:InvokeModelWithResponseStream` on the Claude Sonnet 4.6 inference profile and its foundation model ARNs, a Deny unless the ResearchBot guardrail is applied, and `bedrock:ApplyGuardrail` on that guardrail.
 
 **Violation 2: `s3:*` on `*`**
 - What's wrong: every S3 action on every bucket in the account.
@@ -107,7 +107,7 @@ These answers go in the worksheet's **Blast Radius Analysis** section.
 
 **Original:** The attacker can call any model directly, change or delete guardrails, delete the knowledge base, and turn off invocation logging. They can also reconfigure the harness through `bedrock-agentcore:*` and read, write, or delete any object in any S3 bucket.
 
-**Fixed:** The attacker can invoke Claude Sonnet 4.5 only with the ResearchBot guardrail applied, and call the one gateway. They can't change configuration, reach S3, or switch models.
+**Fixed:** The attacker can invoke Claude Sonnet 4.6 only with the ResearchBot guardrail applied, and call the one gateway. They can't change configuration, reach S3, or switch models.
 
 ---
 

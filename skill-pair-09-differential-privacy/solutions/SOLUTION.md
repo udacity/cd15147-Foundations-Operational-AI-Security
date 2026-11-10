@@ -89,7 +89,7 @@ Output filtering acts after the sensitive data has already been retrieved from t
 ### 1. Configure PII detection in Bedrock Guardrails
 
 1. Navigate to **AWS Console > Services > Amazon Bedrock**
-2. In the left sidebar, under **Build**, click **Guardrails**
+2. In the left navigation, choose **Guardrails**
 3. Click your guardrail name (`myhealth-assistant-guardrail`), then choose **Working draft**. It opens a summary with an **Edit** button for each section. The guardrail-level **Edit** button changes only the name, description, and messages.
 4. In **Sensitive information filters**, choose **Edit**
 5. Under the **PII types** tab, you will see a table of PII categories
@@ -106,7 +106,7 @@ Output filtering acts after the sensitive data has already been retrieved from t
 ### 2. Test PII detection with the Guardrail test console
 
 1. From the guardrail detail page, click **Test** (top right)
-2. Select model: **Anthropic Claude Sonnet 4.5** (Claude 3.7 Sonnet is retired)
+2. Select model: **Anthropic Claude Sonnet 4.6** (Claude 3.7 Sonnet is retired)
 3. The test pane has no system prompt box. It has **Reference source**, **Prompt**, and **Model response** fields. To test the output filter, paste this sample text into **Model response**:
    ```
    You are a helpful assistant. Scheduling coordinator Alex Sample can be reached at alex.sample@westfieldhealth.example,

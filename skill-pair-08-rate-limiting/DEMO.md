@@ -4,7 +4,7 @@
 
 ---
 
-> **Note:** This demo uses **Aria**, the internal assistant of **Vantage Technologies**, running on an Amazon Bedrock AgentCore harness (harness → AgentCore Gateway → Managed Knowledge Base, Claude Sonnet 4.5), built on the **Build Aria: Set Up the Demo Environment** page in Lesson 1 (the same steps as `skill-pair-00-bedrock-setup/WALKTHROUGH.md`), with model invocation logging on. Employees reach Aria through a Streamlit app. The goal is to show the concept working in a live environment before you apply it to the scenario in `EXERCISE.md`. Your capstone project, Northstar Assist, uses the same setup.
+> **Note:** This demo uses **Aria**, the internal assistant of **Vantage Technologies**, running on an Amazon Bedrock AgentCore harness (harness → AgentCore Gateway → Managed Knowledge Base, Claude Sonnet 4.6), built on the **Build Aria: Set Up the Demo Environment** page in Lesson 1 (the same steps as `skill-pair-00-bedrock-setup/WALKTHROUGH.md`), with model invocation logging on. Employees reach Aria through a Streamlit app. The goal is to show the concept working in a live environment before you apply it to the scenario in `EXERCISE.md`. Your capstone project, Northstar Assist, uses the same setup.
 
 ## Scenario
 
@@ -46,12 +46,12 @@ Blocking availability is one threat. Generating unbounded cost is another. Both 
 
 ### Step 1: Show the Amazon Bedrock service quotas
 
-Open **Service Quotas > AWS services > Amazon Bedrock** and search for `Sonnet 4.5`. You'll see rows such as:
+Open **Service Quotas > AWS services > Amazon Bedrock** and search for `Sonnet 4.6`. You'll see rows such as:
 
-- "Cross-region model inference requests per minute for Anthropic Claude Sonnet 4.5 V1"
-- "Global cross-region model inference tokens per day…"
+- "Cross-region model inference requests per minute for Anthropic Claude Sonnet 4.6"
+- "Global cross-region model inference tokens per minute…"
 
-Point out: these quotas apply to the whole account for that model and inference type, not to individual users. A script that uses up the per-minute quota throttles every other Aria user at the AWS level, before any application limit fires. A simple loop won't get there: in the lab account, the cross-region requests-per-minute quota for Sonnet 4.5 was 10,000. The point is that the quota is shared by the whole account.
+Point out: these quotas apply to the whole account for that model and inference type, not to individual users. A script that uses up the per-minute quota throttles every other Aria user at the AWS level, before any application limit fires. A simple loop won't get there: in the lab account, the cross-region requests-per-minute quota for Sonnet 4.6 was 10,000. The point is that the quota is shared by the whole account.
 
 Ask students: "What would you need to know about your users to set a sane per-user limit?"
 (Expected answer: number of users, expected questions per user per day, peak concurrency.)
@@ -60,12 +60,12 @@ Ask students: "What would you need to know about your users to set a sane per-us
 
 ### Step 2: Show what makes one question expensive
 
-Open the harness details page in the Amazon Bedrock AgentCore console, or run `GetHarness`. Point out the defaults:
+Open the harness page's **Configuration** tab in the Amazon Bedrock AgentCore console, or run `GetHarness`. Point out the defaults:
 
 - `maxIterations`: **75**
 - `timeoutSeconds`: **3600**
 
-These caps bound how long one request can run and how many tool rounds it can take. In the lab, a question whose answer had been removed from the knowledge base ("What discount can a sales engineer approve without escalation?") drove **9 Retrieve calls** before Aria answered. Another question drove 6. Every tool round is another model invocation. Review the harness's invocation limits and set them to what a real question needs.
+These caps bound how long one request can run and how many tool rounds it can take. In the lab, a question whose answer had been removed from the knowledge base ("What discount can a sales engineer approve without escalation?") drove **9 Retrieve calls** before Aria answered with Claude Sonnet 4.5, and another question drove 6. Claude Sonnet 4.6 made one call for it and said it couldn't find the answer. Every tool round is another model invocation. Review the harness's invocation limits and set them to what a real question needs.
 
 Two client-side cost multipliers came up in the lab too:
 
@@ -83,7 +83,7 @@ Set explicit timeouts, turn off silent SDK retries, and use a fresh session ID i
 | Setting | Value |
 |---|---|
 | Namespace / metric | `AWS/Bedrock` / `Invocations` |
-| Dimension | `ModelId` = `us.anthropic.claude-sonnet-4-5-20250929-v1:0` |
+| Dimension | `ModelId` = `us.anthropic.claude-sonnet-4-6` |
 | Statistic / period | Sum / 1 hour |
 | Condition | > 50 |
 | Action | SNS topic `vantage-aria-security-alerts` |
@@ -102,7 +102,7 @@ cloudwatch.put_metric_alarm(
     AlarmDescription="Model invocations for Aria's model above normal hourly volume",
     Namespace="AWS/Bedrock",
     MetricName="Invocations",
-    Dimensions=[{"Name": "ModelId", "Value": "us.anthropic.claude-sonnet-4-5-20250929-v1:0"}],
+    Dimensions=[{"Name": "ModelId", "Value": "us.anthropic.claude-sonnet-4-6"}],
     Statistic="Sum",
     Period=3600,
     EvaluationPeriods=1,
@@ -112,7 +112,7 @@ cloudwatch.put_metric_alarm(
 )
 ```
 
-The metric is `Invocations`. There's no `InvocationCount`. It counts model turns, not questions, so size the threshold from turns per question. Right after you create the alarm it shows `INSUFFICIENT_DATA` until traffic arrives. Use the model ID your harness saved (`GetHarness` shows it). `AWS/Bedrock` also has `Invocations` series for the global inference profile, such as `global.anthropic.claude-sonnet-4-5…`. An alarm on one profile's `ModelId` never gets data from traffic that uses the other.
+The metric is `Invocations`. There's no `InvocationCount`. It counts model turns, not questions, so size the threshold from turns per question. Right after you create the alarm it shows `INSUFFICIENT_DATA` until traffic arrives. Use the model ID your harness saved (`GetHarness` shows it). `AWS/Bedrock` also has `Invocations` series for the global inference profile, such as `global.anthropic.claude-sonnet-4-6`. An alarm on one profile's `ModelId` never gets data from traffic that uses the other.
 
 Other `AWS/Bedrock` metrics with the `ModelId` dimension: `InvocationLatency`, `InvocationClientErrors`, `InputTokenCount`, `OutputTokenCount`, and `EstimatedTPMQuotaUsage`.
 
