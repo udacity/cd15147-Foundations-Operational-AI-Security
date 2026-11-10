@@ -156,7 +156,7 @@ The worksheet asks for two denied topics from different risk categories. This an
 
 **Explanation on bank account numbers and credit card numbers:** Customers sometimes volunteer these in queries ("My card ending in 5566 was charged..."). Since the KB has no account data, BankBot cannot use account numbers to answer the question — it can only answer about general fee policies regardless of the specific account. When BLOCK triggers, the customer should receive a message like: "I'm not able to process account-specific information. For questions about a specific transaction, please contact our customer service team at 1-800-FIRSTLIGHT or log in to the online portal." This messaging avoids revealing that PII was detected while directing the customer to the appropriate channel.
 
-**ANONYMIZE is also defensible** for Social Security numbers, card numbers, and bank account numbers. With ANONYMIZE, a customer who includes their own number gets an answer with the number masked, instead of the blocked message. A student who chooses ANONYMIZE and explains that tradeoff has a defensible answer. BLOCK is the stricter choice, and it accepts that Prompt 5 is blocked at input. On a streaming harness, Mask (`ANONYMIZE` in the API) can let part of a value through, as the demo shows with `{EMAIL}ops@vantagetech.example`, even when the invocation log records the entity as `ANONYMIZED`. When a value must never reach the user, use BLOCK.
+**ANONYMIZE is also defensible** for Social Security numbers, card numbers, and bank account numbers. With ANONYMIZE, a customer who includes their own number gets an answer with the number masked, instead of the blocked message. A student who chooses ANONYMIZE and explains that tradeoff has a defensible answer. BLOCK is the stricter choice, and it accepts that Prompt 5 is blocked at input. On a streaming harness, Mask (`ANONYMIZE` in the API) can let part of a value through, as the demo shows with `{EMAIL}ops@vantagetech.example` (a Claude Sonnet 4.5 run), even when the invocation log records the entity as `ANONYMIZED`. When a value must never reach the user, use BLOCK.
 
 ---
 
@@ -202,7 +202,7 @@ This is the most important console walkthrough in the course. Follow these steps
 
 1. Open the **AWS Management Console**
 2. Navigate to **Services > Amazon Bedrock**
-3. In the left sidebar, under **Build**, click **Guardrails**
+3. In the left navigation, choose **Guardrails**
 4. Click **Create guardrail** (top right)
 
 ---
@@ -237,7 +237,7 @@ For each content category, you will see two sliders — **Input** (what goes in)
 
 Prompt attacks has only an **Input** slider, because prompt attack detection checks input only.
 
-The page also has a **Content filters tier** setting. Keep **Classic**. **Standard** requires cross-Region inference.
+The page also has a **Content filters tier** setting. Choose **Classic** (labelled **Legacy**). The console preselects **Standard**, which requires cross-Region inference.
 
 To set each filter:
 1. Find the category row
@@ -280,6 +280,8 @@ Click **Add denied topic** for each topic. Each topic opens a dialog. The sample
   - `What do I say to reset my password if I don't have my phone?`
 - Click **Add topic**
 
+Under **Denied topics tier**, choose **Classic** as well.
+
 Click **Next**
 
 ---
@@ -321,6 +323,7 @@ On the **Add grounding check** page:
 3. Toggle **Enable relevance check** to **ON**
 4. Set **Relevance threshold** to **0.7**
 5. Note: grounding compares a response with a reference source. On an AgentCore harness, whether it acts on retrieved knowledge base chunks wasn't verified, so treat it as a partial check and don't rely on it to stop indirect injection.
+6. Under **Contextual grounding tier**, choose **Classic**: with **Standard** selected, the wizard won't let you continue.
 
 Click **Next**
 
@@ -339,7 +342,7 @@ Click **Next**
 
 1. From the guardrail detail page, click **Test** (top right)
 2. The test panel opens on the right side
-3. Under **Select model**, choose **Claude Sonnet 4.5** (don't choose Nova Lite v1 or Nova Pro v1)
+3. Under **Select model**, choose **Claude Sonnet 4.6** (don't choose Nova Lite v1 or Nova Pro v1)
 4. Test with legitimate queries first:
    - Type: `What is the current APR on a 30-year fixed mortgage?`
    - Expected: response passes through (no block)
@@ -359,15 +362,15 @@ Click **Next**
 ### Step 9: Attach the guardrail to your AgentCore harness
 
 1. On the guardrail page, choose **Create version** and note the version number. Attach a numbered version, not the working draft.
-2. Open your harness in **Amazon Bedrock AgentCore > Harness** and choose its **IAM role** link. Choose **Add permissions > Create inline policy**, and in **JSON** allow `bedrock:ApplyGuardrail` on the `bankbot-guardrail` ARN. The console's default harness role doesn't include this permission, and without it every request fails with `AccessDeniedException`.
-3. Back on the harness page, choose **Edit**. Under **Model and system prompt > Parameters**, choose **Add parameter**, and under **Additional parameters** add:
+2. Open your harness in **Amazon Bedrock AgentCore > Agents**, open its **Configuration** tab, and choose its **IAM role** link. Choose **Add permissions > Create inline policy**, and in **JSON** allow `bedrock:ApplyGuardrail` on the `bankbot-guardrail` ARN. The console's default harness role doesn't include this permission, and without it every request fails with `AccessDeniedException`.
+3. Back on the harness page, choose **Update**. Expand **Model and system prompt**, and under **Parameters**, choose **Add parameter**, and under **Additional parameters** add:
    - **Parameter:** `guardrailConfig`
    - **Value:** `{"guardrailIdentifier":"<guardrail-arn>","guardrailVersion":"1","trace":"enabled"}`
 4. Choose **Save** in the panel (this only stages the change), then **Save Harness**. There's no Prepare step; the save creates a new harness version.
-5. Test in **Harness playground**: an injection prompt should return your blocked input message. The Agent trace shows tool calls, not guardrail policies; policy details are in the invocation log under `output.outputBodyJson.trace.guardrail`.
+5. Test in the **Playground**: an injection prompt should return your blocked input message. The Agent trace shows tool calls, not guardrail policies; policy details are in the invocation log under `output.outputBodyJson.trace.guardrail`.
 6. Expect two harness-specific behaviors:
    - Answers with anonymized PII still end with stop reason `guardrail_intervened`.
-   - An output-side block arrives after the answer has streamed, so the customer has already seen the text. If BankBot must withhold blocked output, the application has to buffer the response and discard it on `guardrail_intervened`.
+   - An output-side block can arrive after part or all of the answer has streamed, so the customer has already seen that text. If BankBot must withhold blocked output, the application has to buffer the response and discard it on `guardrail_intervened`.
 7. Make the guardrail mandatory. A caller can send a per-request model override without `guardrailConfig` and get an unguarded answer. Add a Deny on the harness role for `bedrock:InvokeModel` and `bedrock:InvokeModelWithResponseStream` with the condition `ArnNotLike` `bedrock:GuardrailIdentifier` = your guardrail ARN (and `<arn>:*`). Use the ARN condition operator `ArnNotLike`. `bedrock:GuardrailIdentifier` holds an ARN, and IAM Access Analyzer flags a string operator such as `StringNotLike` on it as a security warning. The full policy is in `DEMO.md` Step 7.
 
 ---

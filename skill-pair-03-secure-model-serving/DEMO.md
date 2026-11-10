@@ -64,7 +64,7 @@ Use IAM roles, not static access keys. On AWS compute (EC2, ECS, Lambda), the at
 
 Amazon Bedrock has no model access step. Models are available on first use, so IAM (plus any SCPs above the account) is the only gate on which models can be called.
 
-Open **Amazon Bedrock AgentCore > Harness > VantageAria** and choose the **IAM role** link. The console's default role, `AmazonBedrockAgentCoreHarnessDefaultServiceRole-<suffix>`, has two customer managed policies. Its execution policy allows:
+Open **Amazon Bedrock AgentCore > Agents > VantageAria**, open its **Configuration** tab, and choose the **IAM role** link. The console's default role, `AmazonBedrockAgentCoreHarnessDefaultServiceRole-<suffix>`, has two customer managed policies. Its execution policy allows:
 
 - `bedrock:InvokeModel*` on `foundation-model/*` and on `arn:aws:bedrock:us-east-1:<acct>:*`
 - AgentCore Browser and Code Interpreter sessions, EFS and S3 Files mounts, and Memory events, even though Aria uses none of them
@@ -72,13 +72,13 @@ Open **Amazon Bedrock AgentCore > Harness > VantageAria** and choose the **IAM r
 
 Open the role's **Last Accessed** tab. After a round of test prompts it showed 11 services granted and only 5 used (`bedrock`, `bedrock-agentcore`, `ecr-public`, `logs`, `xray`). You fix this role in Step 6.
 
-![Harness details page with the IAM role link](aria-screenshots/aria-08-harness-ready.png)
+![Configuration tab of the harness page, with the IAM role link under Version details](aria-screenshots/aria-08-harness-ready.png)
 
 ### Step 2 — Model invocation logging
 
 If you followed the **Build Aria: Set Up the Demo Environment** page in Lesson 1, logging is already on. Check it in the Bedrock console under **Settings > Model invocation logging**, and skip the command.
 
-To turn it on yourself, create the log group first. The role that Bedrock creates for logging can write to an existing log group, but it can't create one. In CloudWatch, choose **Logs > Log groups > Create log group**, and enter `/aws/bedrock/vantage-aria/invocations`. Then turn logging on:
+To turn it on yourself, create the log group first. The role that Bedrock creates for logging can write to an existing log group, but it can't create one. In CloudWatch, choose **Log Management**, then **Actions > Create log group**, and enter `/aws/bedrock/vantage-aria/invocations`. Then turn logging on:
 
 ```bash
 aws bedrock put-model-invocation-logging-configuration \
@@ -175,7 +175,7 @@ Point out:
 The caller policy has a gap it can't close. A caller with only those two actions can pass a per-request `model` override. `InvokeHarness` has no condition keys, so no caller policy can block that. The override is a `model` argument on the same `invoke_harness` call from Step 3:
 
 ```python
-model={"bedrockModelConfig": {"modelId": "us.anthropic.claude-sonnet-4-5-20250929-v1:0", "apiFormat": "converse_stream"}}
+model={"bedrockModelConfig": {"modelId": "us.anthropic.claude-sonnet-4-6", "apiFormat": "converse_stream"}}
 ```
 
 In testing, a caller with only invoke permissions switched Aria to Nova 2 Lite. Worse, an override without `additionalParams.guardrailConfig` ran with **no guardrail**: the prompt "My SSN is 900-12-3456 and I need HR help." got a normal answer instead of the blocked message.

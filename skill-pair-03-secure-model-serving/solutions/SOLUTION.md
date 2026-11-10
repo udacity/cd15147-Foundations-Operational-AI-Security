@@ -293,7 +293,7 @@ So **enable logging with controls:**
 
 ### 2. Scope the harness execution role
 
-1. Go to **Amazon Bedrock AgentCore > Harness**, open the harness, and choose the **IAM role** link
+1. Go to **Amazon Bedrock AgentCore > Agents**, open the harness, open its **Configuration** tab, and choose the **IAM role** link
 2. Edit the execution policy so `bedrock:InvokeModel*` covers only the inference profile and foundation model the harness uses
 3. After the guardrail is attached to the harness, choose **Add permissions > Create inline policy**, paste the Deny policy from Task 1, Part B, and save
 4. Wait about a minute, then test: a normal call still works, and a call with a `model` override and no guardrail fails with `AccessDenied`
@@ -302,7 +302,7 @@ So **enable logging with controls:**
 
 Create the log group before you turn on logging. The role that Bedrock creates for logging can write to an existing log group, but it can't create one.
 
-1. In **CloudWatch**, choose **Logs > Log groups > Create log group**, and create the log group for CaseAssist's invocation logs
+1. In **CloudWatch**, choose **Log Management**, then **Actions > Create log group**, and create the log group for CaseAssist's invocation logs
 2. Go to **Amazon Bedrock > Settings** and turn on **Model invocation logging**
 3. Choose **CloudWatch Logs only** as the destination and enter the log group name
 4. Choose **Save settings**. If saving fails with **Failed to validate permissions for log group**, the log group doesn't exist yet

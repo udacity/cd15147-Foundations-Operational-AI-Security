@@ -203,7 +203,7 @@ With case-insensitive matching, two more patterns match in `all_hands_q1_2026_up
 These steps follow the Managed Knowledge Base you built in `skill-pair-00-bedrock-setup/WALKTHROUGH.md`.
 
 1. Search for **Amazon Bedrock AgentCore** and open it
-2. In the left navigation under **Built-in tools**, choose **Knowledge Bases (KB)**
+2. In the left navigation, choose **Knowledge Bases (KB)**
 3. Choose your knowledge base (for the lab build, `vantage-aria-kb`)
 4. Choose your S3 data source (for the lab build, `vantage-documents`)
 5. The **Sync history** lists each sync job with its status and document counts. A document that was overwritten shows up as **modified**. **View CloudWatch logs** opens the knowledge base application logs, which record when each sync started and finished

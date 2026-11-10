@@ -6,11 +6,11 @@
 
 > **Note:** This demo uses **Aria**, the internal employee assistant of **Vantage Technologies**, the same system shown in the video. The goal is to show the concept working on a real deployment before you apply it to the exercise scenario. Everything you see here carries over to the scenario in `EXERCISE.md`.
 
-> **Platform note for the video:** The video leaves the Claude version open ("4.5, 4.6 to 4.7 depending on what's available"). Aria runs **Claude Sonnet 4.5** on an Amazon Bedrock AgentCore harness, saved as `us.anthropic.claude-sonnet-4-5-20250929-v1:0`. Amazon Bedrock no longer has a model access step, so read the model ID from the harness instead. Step 10 adds the harness components the video doesn't show. The template in the video also has different sections (Model Inventory, Embedding model, Data inventory, External services, IAM roles, Known risks). Use `starter/ML_BOM_TEMPLATE.md`, whose sections are listed in Step 1.
+> **Platform note for the video:** The video leaves the Claude version open ("4.5, 4.6 to 4.7 depending on what's available"). Aria runs **Claude Sonnet 4.6** on an Amazon Bedrock AgentCore harness, saved as `us.anthropic.claude-sonnet-4-6`. Amazon Bedrock no longer has a model access step, so read the model ID from the harness instead. Step 10 adds the harness components the video doesn't show. The template in the video also has different sections (Model Inventory, Embedding model, Data inventory, External services, IAM roles, Known risks). Use `starter/ML_BOM_TEMPLATE.md`, whose sections are listed in Step 1.
 
 ## Overview
 
-In this demo, we build a partial Machine Learning Bill of Materials (ML-BOM) for a simple, single-model deployment — Claude Sonnet 4.5 accessed through Amazon Bedrock — to show exactly what the format captures and why it matters for security.
+In this demo, we build a partial Machine Learning Bill of Materials (ML-BOM) for a simple, single-model deployment — Claude Sonnet 4.6 accessed through Amazon Bedrock — to show exactly what the format captures and why it matters for security.
 
 The goal is not to fill in every field perfectly. The goal is to surface the questions that the BOM forces you to ask, and to show how those questions connect directly to threat modeling. By the end, you will see why a traditional software SBOM is not enough for AI systems.
 
@@ -18,7 +18,7 @@ The goal is not to fill in every field perfectly. The goal is to surface the que
 
 ## Scenario
 
-Vantage Technologies is early in its AI rollout. Before the knowledge base is connected, the security team has approved a simple use case: employees can query Aria, an internal chatbot powered by Claude Sonnet 4.5 through Amazon Bedrock.
+Vantage Technologies is early in its AI rollout. Before the knowledge base is connected, the security team has approved a simple use case: employees can query Aria, an internal chatbot powered by Claude Sonnet 4.6 through Amazon Bedrock.
 
 The CISO pulls you into a meeting and asks:
 
@@ -31,7 +31,7 @@ Your answer is an ML-BOM. We are going to build one, live, for this single-model
 ## Tools Used
 
 - The `ML_BOM_TEMPLATE.md` from `starter/` (we'll walk through its structure)
-- The Aria harness configuration — the **Configs** panel in the Harness playground or the `GetHarness` API — to confirm the saved model ID and inference profile
+- The Aria harness configuration — the **Configs** panel in the Playground or the `GetHarness` API — to confirm the saved model ID and inference profile
 - Anthropic model card documentation (linked in the template)
 
 ---
@@ -54,13 +54,13 @@ This is the "managed service opacity" problem: the model can be updated or chang
 
 ### 4. Why "intended use" and "out-of-scope use" are security controls
 
-When we write down that Claude Sonnet 4.5's intended use is "natural language understanding and generation for internal employee Q&A," we are implicitly drawing a boundary. Anything outside that boundary — clinical advice, legal conclusions, real-time voice synthesis — is out of scope. Those boundaries become inputs to your threat model: what happens when a user tries to push the model across those lines? How do you detect it? How do you prevent it?
+When we write down that Claude Sonnet 4.6's intended use is "natural language understanding and generation for internal employee Q&A," we are implicitly drawing a boundary. Anything outside that boundary — clinical advice, legal conclusions, real-time voice synthesis — is out of scope. Those boundaries become inputs to your threat model: what happens when a user tries to push the model across those lines? How do you detect it? How do you prevent it?
 
 Intended use and out-of-scope use documentation is not corporate boilerplate. It is the starting point for your misuse section.
 
 ### 5. How misuse documentation maps to threat modeling
 
-The misuse section of an ML-BOM lists the ways an attacker or a misguided user could abuse the model. For Claude Sonnet 4.5, the primary misuse vectors are prompt injection (crafting inputs to override system instructions) and jailbreaking (inputs designed to bypass safety guardrails). Documenting these here means they appear on your threat model. If they are not in the BOM, they are easy to forget.
+The misuse section of an ML-BOM lists the ways an attacker or a misguided user could abuse the model. For Claude Sonnet 4.6, the primary misuse vectors are prompt injection (crafting inputs to override system instructions) and jailbreaking (inputs designed to bypass safety guardrails). Documenting these here means they appear on your threat model. If they are not in the BOM, they are easy to forget.
 
 ---
 
@@ -80,8 +80,8 @@ Fill in the following:
 
 | Field | Value |
 |---|---|
-| Model Name | Claude Sonnet 4.5 |
-| Version | `us.anthropic.claude-sonnet-4-5-20250929-v1:0` (US cross-Region inference profile, as saved on the harness) |
+| Model Name | Claude Sonnet 4.6 |
+| Version | `us.anthropic.claude-sonnet-4-6` (US cross-Region inference profile, as saved on the harness) |
 | Model Type | Text generation (decoder-only LLM) |
 | Author/Organization | Anthropic |
 | License | Commercial API — Anthropic usage policy |
@@ -89,7 +89,7 @@ Fill in the following:
 
 Point out: the "Source URL" here links to documentation, not downloadable weights. This is a managed service — there is nothing to download. That distinction matters.
 
-Also point out: the saved ID depends on the inference option chosen when the harness was created. The model picker offers **US Anthropic Claude Sonnet 4.5** and **Global Claude Sonnet 4.5**, and the choice changes the `us.` or `global.` prefix. Record the exact string you read from the harness, not the one you expect.
+Also point out: the saved ID depends on the inference option chosen when the harness was created. The model picker offers **US Anthropic Claude Sonnet 4.6** and **Global Anthropic Claude Sonnet 4.6**, and the choice changes the `us.` or `global.` prefix. Record the exact string you read from the harness, not the one you expect.
 
 ---
 
@@ -111,7 +111,7 @@ This is the opacity problem in action. We know the methodology (RLHF, Constituti
 | Field | Value |
 |---|---|
 | Architecture Type | Decoder-only transformer |
-| Model Family | Claude Sonnet 4.5 (Anthropic Claude 4.5 generation) |
+| Model Family | Claude Sonnet 4.6 (Anthropic Claude 4.6 generation) |
 
 Note the alignment methodology: Constitutional AI (CAI) — a technique where the model is trained to critique and revise its own outputs against a set of principles. This is security-relevant because it affects how the model responds to adversarial prompts and why jailbreaking techniques that work on other models may behave differently here.
 
@@ -123,18 +123,18 @@ Note the alignment methodology: Constitutional AI (CAI) — a technique where th
 |---|---|
 | Input Type | Text (system prompt + user messages) |
 | Input Format | JSON via the Bedrock Converse streaming API (the harness saves `apiFormat` `converse_stream`) |
-| Max Input Tokens | 200,000 (200K context window) |
+| Max Input Tokens | 1,000,000 (1M context window) |
 | Output Type | Text |
 | Output Format | JSON (message content blocks) |
 | Max Output Tokens | Up to 64,000 |
 
-The 200K context window is a security-relevant spec. An attacker who can stuff a large context can attempt to dilute system prompt instructions or exploit attention patterns. Document it.
+The 1M context window is a security-relevant spec. An attacker who can stuff a large context can attempt to dilute system prompt instructions or exploit attention patterns. Document it.
 
 ---
 
 ### Step 6 — Intended Use
 
-> Claude Sonnet 4.5 is intended for natural language understanding and text generation tasks in the context of internal employee Q&A. The model receives a system prompt establishing its role, a retrieved context window (in future RAG deployments), and a user question, then returns a grounded natural-language response.
+> Claude Sonnet 4.6 is intended for natural language understanding and text generation tasks in the context of internal employee Q&A. The model receives a system prompt establishing its role, a retrieved context window (in future RAG deployments), and a user question, then returns a grounded natural-language response.
 
 ---
 
@@ -176,7 +176,7 @@ Once Aria is connected to its knowledge base, the model is one row among many. O
 
 | Component | Aria value | Why it belongs in the BOM |
 |---|---|---|
-| Harness | `VantageAria`. Model `us.anthropic.claude-sonnet-4-5-20250929-v1:0`, memory off, one tool (the gateway), system prompt, `maxIterations` 75, `timeoutSeconds` 3600, `sliding_window` truncation at 150 messages. A new version is created automatically with each update | The system prompt and limits define behavior and cost ceilings. The version number tells you what changed and gives you a rollback point |
+| Harness | `VantageAria`. Model `us.anthropic.claude-sonnet-4-6`, memory off, one tool (the gateway), system prompt, `maxIterations` 75, `timeoutSeconds` 3600, `sliding_window` truncation at 150 messages. A new version is created automatically with each update | The system prompt and limits define behavior and cost ceilings. The version number tells you what changed and gives you a rollback point |
 | Inference profile | US cross-Region (`us.` prefix) | Requests may be processed in other US Regions. A lab invocation record from a us-east-1 harness showed `inferenceRegion: us-east-2`. This is a data residency fact |
 | AgentCore Gateway | `vantage-aria-gateway`, target `aria-kb` (type Knowledge Base), exposed to the model as the tool `aria-kb___Retrieve` | It is the path retrieved content takes into the model's context |
 | Managed Knowledge Base | `vantage-aria-kb`, S3 data source, managed vector store, managed parser, default chunking, on-demand sync | You can't inspect the vector store directly, so this is managed-service opacity again. Record what you can't see |
@@ -186,7 +186,7 @@ Once Aria is connected to its knowledge base, the model is one row among many. O
 | Guardrail | `aria-production-guardrails`. At this point in the course it's version 1 and isn't attached. Lesson 11 creates version 2 and attaches it through the harness `guardrailConfig` additional parameter | Record the version and whether it's attached, because a new guardrail version changes behavior without changing the harness |
 | Log groups | `/aws/bedrock/vantage-aria/invocations` (model invocation logs), `/aws/bedrock-agentcore/runtimes/harness_VantageAria-<id>-DEFAULT` (harness runtime), `/aws/vendedlogs/bedrock/knowledge-base/APPLICATION_LOGS/<kb-id>` (ingestion) | Invocation records contain the full system prompt and retrieved chunk text, so treat the log group as a sensitive data store |
 
-Where to read each value: the harness **Configs** panel in the Harness playground or `GetHarness` for the model, prompt, and limits; the gateway detail page for the target; the knowledge base data source page for parsing, chunking, and sync; IAM for the roles.
+Where to read each value: the harness **Configs** panel in the Playground or `GetHarness` for the model, prompt, and limits; the gateway detail page for the target; the knowledge base data source page for parsing, chunking, and sync; IAM for the roles.
 
 ---
 

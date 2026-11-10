@@ -42,10 +42,10 @@ The permissions each role allows are also too broad. Scoping them is account-lev
       "Effect": "Deny",
       "Action": "bedrock:InvokeModel*",
       "NotResource": [
-        "arn:aws:bedrock:us-east-1:*:inference-profile/us.anthropic.claude-sonnet-4-5-20250929-v1:0",
-        "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-sonnet-4-5-20250929-v1:0",
-        "arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-sonnet-4-5-20250929-v1:0",
-        "arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-sonnet-4-5-20250929-v1:0",
+        "arn:aws:bedrock:us-east-1:*:inference-profile/us.anthropic.claude-sonnet-4-6",
+        "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-sonnet-4-6",
+        "arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-sonnet-4-6",
+        "arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-sonnet-4-6",
         "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0"
       ]
     },
@@ -67,8 +67,8 @@ The permissions each role allows are also too broad. Scoping them is account-lev
 ### How It Works
 
 - **`DenyUnapprovedModels`** denies `bedrock:InvokeModel*` on every resource except the ARNs in `NotResource`. The approved list has:
-  - The US Claude Sonnet 4.5 inference profile
-  - The Claude Sonnet 4.5 foundation model in each Region the profile routes to (`us-east-1`, `us-east-2`, `us-west-2`)
+  - The US Claude Sonnet 4.6 inference profile
+  - The Claude Sonnet 4.6 foundation model in each Region the profile routes to (`us-east-1`, `us-east-2`, `us-west-2`)
   - Titan Text Embeddings V2, which the knowledge base service role uses to create embeddings during sync. If you leave it out, knowledge base sync fails.
 - **`DenyUnapprovedRegions`** denies `bedrock:InvokeModel*` in any Region outside the list. This addresses data residency, meaning rules about where data is stored and processed. This statement covers only model invocation. You can widen it to other `bedrock:*` and `bedrock-agentcore:*` actions, so that no one creates harnesses or knowledge bases in an unapproved Region. Both scopes are defensible.
 - **Both statements are denies.** The policy sets a ceiling. It doesn't grant anyone permission to invoke a model. Each role still needs its own IAM policy that allows the call. Deny-only SCPs like this one also assume that the default `FullAWSAccess` SCP stays attached.
@@ -76,7 +76,7 @@ The permissions each role allows are also too broad. Scoping them is account-lev
 
 ### Why the Region List Has Three Regions
 
-The inference profile `us.anthropic.claude-sonnet-4-5-20250929-v1:0` is a cross-Region inference profile. It can send a request to a Region other than the one you call. A Region allow-list must include every Region the inference profile uses, or the ceiling blocks the approved model.
+The inference profile `us.anthropic.claude-sonnet-4-6` is a cross-Region inference profile. It can send a request to a Region other than the one you call. A Region allow-list must include every Region the inference profile uses, or the ceiling blocks the approved model.
 
 In the lab, Aria's invocation logs recorded inference in `us-east-2`, and a scoped harness role that allowed the foundation model in `us-east-1`, `us-east-2`, and `us-west-2` kept working. The demo's example policy uses the same three Regions.
 

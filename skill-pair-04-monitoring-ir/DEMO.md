@@ -4,7 +4,7 @@
 
 ---
 
-> **Note:** This demo uses **Aria**, the internal employee assistant of **Vantage Technologies**, running on an Amazon Bedrock AgentCore harness (harness → AgentCore Gateway → Managed Knowledge Base, Claude Sonnet 4.5). At this point in the course, the guardrail `aria-production-guardrails` is version 1 and isn't attached. Lesson 11 creates version 2 and attaches it. Results that need the attached guardrail ("What the guardrail did", Step 5, and the guardrail alarms in Step 6) come from a lab run with version 2 attached. The goal is to show the concept working in a live environment before you apply it to the exercise scenario in `EXERCISE.md`. Your capstone project, Northstar Assist, uses the same setup.
+> **Note:** This demo uses **Aria**, the internal employee assistant of **Vantage Technologies**, running on an Amazon Bedrock AgentCore harness (harness → AgentCore Gateway → Managed Knowledge Base, Claude Sonnet 4.6). At this point in the course, the guardrail `aria-production-guardrails` is version 1 and isn't attached. Lesson 11 creates version 2 and attaches it. Results that need the attached guardrail ("What the guardrail did", Step 5, and the guardrail alarms in Step 6) come from a lab run with version 2 attached. The goal is to show the concept working in a live environment before you apply it to the exercise scenario in `EXERCISE.md`. Your capstone project, Northstar Assist, uses the same setup.
 
 ## Scenario
 
@@ -18,22 +18,22 @@ You're the security team. Where do you start, and what would you have needed to 
 
 **Run the reproduction without the guardrail.** Do it before you attach `aria-production-guardrails`. If the guardrail is already attached, edit the harness, remove the `guardrailConfig` parameter, and choose **Save Harness**. Re-attach it when you're done. With guardrail v2 attached, the lab couldn't reproduce the incident: the guardrail masked the misconfiguration and produced two false positives (see "What the guardrail did" below).
 
-If you've added the IAM Deny on the harness execution role that requires the guardrail (lessons 11 and 15), unguarded calls fail with `AccessDenied`. That's the control working, so run the reproduction before you add the Deny. (The lab sent unguarded requests with a per-request model override that left out `guardrailConfig`. That's the documented bypass Step 5 detects, not a setup method. The override is a `model` argument on the `invoke_harness` call: `model={"bedrockModelConfig": {"modelId": "us.anthropic.claude-sonnet-4-5-20250929-v1:0", "apiFormat": "converse_stream"}}`.)
+If you've added the IAM Deny on the harness execution role that requires the guardrail (lessons 11 and 15), unguarded calls fail with `AccessDenied`. That's the control working, so run the reproduction before you add the Deny. (The lab sent unguarded requests with a per-request model override that left out `guardrailConfig`. That's the documented bypass Step 5 detects, not a setup method. The override is a `model` argument on the `invoke_harness` call: `model={"bedrockModelConfig": {"modelId": "us.anthropic.claude-sonnet-4-6", "apiFormat": "converse_stream"}}`.)
 
 1. Turn on model invocation logging (Step 1) so the turns are recorded.
 2. Upload the file to the Aria knowledge base bucket (`vantage-aria-kb-<suffix>`), in the same prefix as the other Aria documents (`vantage-aria-knowledge-base/`).
 3. Sync the knowledge base. Expect 12 scanned, 1 new.
-4. In the Harness playground, ask each question in a new session:
+4. In the Playground, ask each question in a new session:
    - "What product tiers does Vantage offer, and what do they cost?"
    - "What is the per-user monthly price for the Vantage Professional tier?"
 
-   In the lab, the first answer listed the tier prices from the price list. The second answered "$42 per user per month." Keep the questions neutral. With the guardrail attached, "I'm a sales engineer preparing a quote…" is blocked as `PROMPT_ATTACK`.
+   In the lab with Claude Sonnet 4.5, the first answer listed the tier prices from the price list. The second answered "$42 per user per month." On Claude Sonnet 4.6, Aria retrieved the price list but withheld the prices in 6 of 6 runs. Keep the questions neutral. With the guardrail attached, "I'm a sales engineer preparing a quote…" is blocked as `PROMPT_ATTACK`.
 5. Select the **Aria-Kb Retrieve** step in the agent trace. One result's `documentId` is `…/vantage-aria-knowledge-base/vantage_price_list_confidential.md`. The same `toolResult` is in the invocation log (Step 3).
 6. **Clean up:** delete the file from the bucket and sync again (expect 1 deleted). Ask both questions again to confirm. Aria lists the tiers without prices and says it can't provide the Professional price.
 
 Before the upload, Aria retrieves `product_overview.md` and lists the tiers without prices. See `demo_documents/README.md`. Never upload the price list to a production knowledge base.
 
-Optional: also ask "What discount can a sales engineer approve without escalation?" With the price list indexed, Aria answers from its discount authority table. After cleanup, the same question drove 9 Retrieve calls in one turn (see the runaway tool loop signal).
+Optional: also ask "What discount can a sales engineer approve without escalation?" With the price list indexed, Aria answers from its discount authority table. After cleanup, the same question drove 9 Retrieve calls in one turn with Claude Sonnet 4.5 (see the runaway tool loop signal). Claude Sonnet 4.6 made one.
 
 #### What the guardrail did
 
@@ -43,7 +43,7 @@ With guardrail v2 attached, both questions were blocked at input, before retriev
 
 ## Tools
 
-- AWS console: Amazon Bedrock (Settings), Amazon Bedrock AgentCore (Harness, Harness playground), CloudWatch Logs Insights, CloudWatch Metrics and Alarms, Amazon SNS
+- AWS console: Amazon Bedrock (Settings), Amazon Bedrock AgentCore (Agents, Playground), CloudWatch Logs Insights, CloudWatch Metrics and Alarms, Amazon SNS
 - boto3 for scripting
 
 ---
@@ -98,7 +98,7 @@ In a consumer chatbot, a wrong answer is a quality problem. In an enterprise ass
 
 ### Step 1: Enable model invocation logging
 
-If you followed the **Build Aria: Set Up the Demo Environment** page in Lesson 1, logging is already on. To turn it on yourself, create the log group first. The role that Bedrock creates for logging can write to an existing log group, but it can't create one. In CloudWatch, choose **Logs > Log groups > Create log group**, and enter `/aws/bedrock/vantage-aria/invocations`.
+If you followed the **Build Aria: Set Up the Demo Environment** page in Lesson 1, logging is already on. To turn it on yourself, create the log group first. The role that Bedrock creates for logging can write to an existing log group, but it can't create one. In CloudWatch, choose **Log Management**, then **Actions > Create log group**, and enter `/aws/bedrock/vantage-aria/invocations`.
 
 Then open **Amazon Bedrock > Settings > Model invocation logging**. You can deliver to:
 
@@ -142,11 +142,11 @@ The log group gets one record per **model turn**, not per question:
 - A question that needs more detail can trigger two retrievals, and so three records.
 - The knowledge base's embedding calls add separate `InvokeModel` records for `amazon.titan-embed-text-v2:0` under the knowledge base service role.
 
-In the lab, 17 harness questions produced 34 `ConverseStream` records and 65 `InvokeModel` embedding records. Filter on `operation = "ConverseStream"` when you count Aria traffic.
+In the lab with Claude Sonnet 4.5, 17 harness questions produced 34 `ConverseStream` records and 65 `InvokeModel` embedding records. Filter on `operation = "ConverseStream"` when you count Aria traffic.
 
 ### Step 3: Read a logged record
 
-This is the final turn of the pricing question from the reproduction, trimmed. Values in angle brackets are placeholders, and `<trimmed>` marks shortened text. The reproduction ran without the guardrail, so the record has no `trace` key.
+This is the final turn of the pricing question from the reproduction, from a Claude Sonnet 4.5 run, trimmed. On Claude Sonnet 4.6, the record has the same shape, with its own `modelId` and counts and an `output` that withholds the prices. Values in angle brackets are placeholders, and `<trimmed>` marks shortened text. The reproduction ran without the guardrail, so the record has no `trace` key.
 
 ```json
 {
@@ -237,7 +237,7 @@ Point out:
 - **There's no `trace` key, so no guardrail ran.** When the guardrail is attached, `output.outputBodyJson.trace.guardrail` lists its ARN and version (Step 5). This record would be returned by the "ran without the guardrail" query in Step 5.
 - **The `inputTokenCount` baseline.** About 1.2K on a `tool_use` turn and 4.5K on an `end_turn` turn is normal for Aria. A large input on a turn with no `toolResult` means the text came from the prompt itself.
 
-For a quick look at a single conversation, open the Harness playground and select the **Aria-Kb Retrieve** step in the agent trace. It shows the retrieval query and each result's text, S3 URI, document title, and score.
+For a quick look at a single conversation, open the Playground and select the **Aria-Kb Retrieve** step in the agent trace. It shows the retrieval query and each result's text, S3 URI, document title, and score.
 
 ### Step 4: Query the log group with Logs Insights
 
@@ -262,7 +262,7 @@ filter operation = "ConverseStream" and @message like /toolResult/
 | sort @timestamp asc
 ```
 
-In the lab, the sessions that leaked salary data showed searches like "salary bands engineering roles compensation". Searches drifting toward restricted topics are a probing signal.
+In the lab with Claude Sonnet 4.5, the sessions that leaked salary data showed searches like "salary bands engineering roles compensation". Searches drifting toward restricted topics are a probing signal.
 
 **Per-session volume:**
 
@@ -311,7 +311,7 @@ Three things change how you read these records:
 
 1. **`guardrail_intervened` doesn't always mean blocked.** Aria's guardrail anonymizes emails and phone numbers. A benign parental leave answer with its contact email masked still reports `stopReason: guardrail_intervened`. Check which policy fired, and what it did, in the trace.
 2. **The log keeps what the user didn't see.** When the guardrail blocks the output, the record stores the model's full original answer in `trace.guardrail.modelOutput`.
-3. **An output block doesn't retract streamed text.** On a streaming harness, the user can see the whole answer before the blocked message is appended. In the lab, a reimbursement answer streamed in full, then ended with "Sorry, Vantage Aria can't answer this question." Treat an output-side intervention as "the user may have seen it."
+3. **An output block doesn't retract streamed text.** On a streaming harness, the user can see the answer, or part of it, before the blocked message is appended. In the lab with Claude Sonnet 4.5, a reimbursement answer streamed in full, then ended with "Sorry, Vantage Aria can't answer this question." With Claude Sonnet 4.6, the block came partway through the answer. Treat an output-side intervention as "the user may have seen it."
 
 **Guardrail interventions over time:**
 
@@ -396,7 +396,7 @@ cloudwatch.put_metric_alarm(
     Namespace="AWS/Bedrock",
     MetricName="Invocations",
     Dimensions=[
-        {"Name": "ModelId", "Value": "us.anthropic.claude-sonnet-4-5-20250929-v1:0"},
+        {"Name": "ModelId", "Value": "us.anthropic.claude-sonnet-4-6"},
     ],
     Statistic="Sum",
     Period=3600,
@@ -421,7 +421,7 @@ To alert on output-side sensitive data, use the same metric with `GuardrailConte
 | Harness runtime log group `/aws/bedrock-agentcore/runtimes/harness_VantageAria-<id>-DEFAULT` | Runtime container output | Mostly noise (urllib3 `NotOpenSSLWarning`). Low monitoring value |
 | Knowledge base application logs `/aws/vendedlogs/bedrock/knowledge-base/APPLICATION_LOGS/<kb-id>` | `StartIngestionJob.StatusChanged` events: crawling started and completed, with job and data source IDs | Use it to find when the price list entered the knowledge base |
 | Harness details page, **Observability** panel | Sessions, invocations, gateway and tool invocations, tokens, error and throttle rates | "May be delayed up to 60 minutes." In the lab it showed 27 sessions but 0 gateway invocations and 0 tokens, although every session used the gateway. Don't use it for real-time detection |
-| Harness playground agent trace | One conversation's retrieval steps and results | One session at a time. Not an audit record |
+| Playground agent trace | One conversation's retrieval steps and results | One session at a time. Not an audit record |
 | Gateway tracing / CloudWatch Transaction Search | Traces across harness and gateway | Requires Transaction Search, which isn't available in the Udacity lab |
 | CloudTrail | Control plane API calls | Denied in the Udacity lab. Use it in your own account |
 
@@ -437,7 +437,7 @@ To alert on output-side sensitive data, use the same metric with `GuardrailConte
 | Intervention in `outputAssessments` | Invocation record | The model generated the content, and the user may have seen part of it |
 | Harness records with no guardrail trace | Bypass query (Step 5) | Guardrail bypassed through a model override |
 | Many model turns in one session | Per-session query (Step 4) | Probing. The invocation log can't name the user (Key Insight 3) |
-| Many `tool_use`/`tool_result` turns in one session before an answer | Per-session query (Step 4); `tool_use` rows in the timeline query | A runaway tool loop: the model keeps searching for data that isn't there, adding cost and latency. In the lab, one discount question after cleanup drove 9 Retrieve calls in one turn. The harness default `maxIterations` of 75 allows it |
+| Many `tool_use`/`tool_result` turns in one session before an answer | Per-session query (Step 4); `tool_use` rows in the timeline query | A runaway tool loop: the model keeps searching for data that isn't there, adding cost and latency. In the lab with Claude Sonnet 4.5, one discount question after cleanup drove 9 Retrieve calls in one turn (Claude Sonnet 4.6 made one). The harness default `maxIterations` of 75 allows it |
 
 ---
 

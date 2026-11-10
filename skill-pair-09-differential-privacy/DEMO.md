@@ -1,11 +1,11 @@
 # Demo: Privacy-Preserving Design for AI Knowledge Bases
 
 **Estimated Time:** 20 minutes
-**Format:** Walkthrough in the AWS console (Guardrails, AgentCore Harness, S3, Knowledge Bases, and the Harness playground)
+**Format:** Walkthrough in the AWS console (Guardrails, AgentCore Harness, S3, Knowledge Bases, and the Playground)
 
 ---
 
-> **Note:** This demo uses **Aria**, the internal employee assistant of **Vantage Technologies**. Aria runs on an Amazon Bedrock AgentCore harness (`VantageAria`, Claude Sonnet 4.5) that retrieves from a Managed Knowledge Base through an AgentCore Gateway. Build it first on the **Build Aria: Set Up the Demo Environment** page in Lesson 1, and create guardrail version 2 in the Lesson 11 demo (`skill-pair-05-input-sanitization/DEMO.md`). The results quoted below come from a lab run of this exact setup. Everything here carries over to the MyHealth Assistant scenario in `EXERCISE.md`.
+> **Note:** This demo uses **Aria**, the internal employee assistant of **Vantage Technologies**. Aria runs on an Amazon Bedrock AgentCore harness (`VantageAria`, Claude Sonnet 4.6) that retrieves from a Managed Knowledge Base through an AgentCore Gateway. Build it first on the **Build Aria: Set Up the Demo Environment** page in Lesson 1, and create guardrail version 2 in the Lesson 11 demo (`skill-pair-05-input-sanitization/DEMO.md`). The results quoted below come from a lab run of this exact setup. Everything here carries over to the MyHealth Assistant scenario in `EXERCISE.md`.
 
 ## Scenario
 
@@ -25,7 +25,7 @@ A retrieval system that has ingested a directory answers these accurately, becau
 
 - **Documents:** `demo_documents/` (classification practice and the minimized directory) and the full directory in `skill-pair-00-bedrock-setup/vantage-aria-knowledge-base/employee_directory.csv`
 - **Amazon Bedrock > Guardrails:** create the guardrail version this demo needs
-- **Amazon Bedrock AgentCore > Harness** and **Harness playground:** attach the guardrail and run prompts
+- **Amazon Bedrock AgentCore > Agents** and **Playground:** attach the guardrail and run prompts
 - **S3** and **Knowledge Bases (KB):** swap the directory file and sync
 - **CloudWatch** (optional): the invocation log group `/aws/bedrock/vantage-aria/invocations`, if you turned on model invocation logging in the setup walkthrough
 
@@ -55,7 +55,7 @@ It doesn't fit a retrieval assistant, for four reasons:
 
 ## Key Insights
 
-1. **A directory row leaks more than you asked for.** Asking for one email returns the whole row, salary band included.
+1. **A directory row leaks more than you asked for.** Asking for one email retrieves the whole row, salary band included.
 2. **Some guardrail settings break a tool-using harness.** Name anonymization and an over-broad personal data topic both stop legitimate lookups. Choose settings that let the assistant work, then verify.
 3. **Minimization is the fix that works.** Once the sensitive columns are gone, aggregate answers come back clean. Inference from *other* documents is still possible.
 4. **Output masking has gaps.** Streamed answers can leak fragments, and retrieved chunks are never screened.
@@ -90,15 +90,15 @@ employee_id,full_name,email,phone_extension,department,manager_name,office_locat
 
 ### Step 2: Show the failure without a guardrail (2 minutes)
 
-Run this step with no guardrail attached. If you added the guardrail Deny in Lesson 11 (the inline policy with Sid `DenyModelCallsWithoutAriaGuardrail`), remove that inline policy before Step 2 and add it back in Step 8. Otherwise every unguarded call fails with `AccessDeniedException`. If you attached a guardrail in the input sanitization demo, open `VantageAria`, choose **Edit**, remove the `guardrailConfig` parameter under **Model and system prompt > Parameters**, choose **Save** in the panel, then **Save Harness**.
+Run this step with no guardrail attached. If you added the guardrail Deny in Lesson 11 (the inline policy with Sid `DenyModelCallsWithoutAriaGuardrail`), remove that inline policy before Step 2 and add it back in Step 8. Otherwise every unguarded call fails with `AccessDeniedException`. If you attached a guardrail in the input sanitization demo, open `VantageAria`, choose **Update**, expand **Model and system prompt** (it opens collapsed), remove the `guardrailConfig` parameter under **Parameters**, choose **Save** in the panel, then **Save Harness**.
 
-In the **Harness playground**, select `VantageAria` and the **DEFAULT** endpoint. Start a new session for each prompt:
+In the **Playground**, select `VantageAria` and the **DEFAULT** endpoint. Start a new session for each prompt:
 
 ```
 What is the email address of Sarah Johnson?
 ```
 
-**Lab result:** Aria returned `sarah.johnson@vantagetech.example`, plus her department, manager, office, and **salary band L5**. Open the **Aria-Kb Retrieve** step in the Agent trace: the chunk is the directory CSV, so the whole row reached the model.
+**Lab result:** Aria returned `sarah.johnson@vantagetech.example`, plus her department and office (with Claude Sonnet 4.5, also her manager and **salary band L5**). Open the **Aria-Kb Retrieve** step in the Agent trace: the chunk is the directory CSV, so the whole row reached the model.
 
 ![Aria-Kb Retrieve panel with the query "Sarah Johnson email address" and a result from employee_directory.csv](aria-screenshots/aria-11-unguarded-email-lookup.png)
 
@@ -112,7 +112,7 @@ Do we have an employee named Jane Smith?
 Who are Jane Smith's direct reports?
 ```
 
-**Lab result:** Aria inferred "no direct reports" from the `manager_name` column. The structure of the data leaks even when no single field is sensitive.
+**Lab result (Claude Sonnet 4.5):** Aria inferred "no direct reports" from the `manager_name` column. The structure of the data leaks even when no single field is sensitive.
 
 ---
 
@@ -122,9 +122,9 @@ Version 2 of `aria-production-guardrails` won't work for this demo, and the obvi
 
 - **The `employee-pii-beyond-directory` topic blocks legitimate lookups.** With version 2 attached, "What is the email address of Sarah Johnson?" was blocked at input, before any retrieval. Adding "Work email and extension are allowed" to the topic definition didn't stop it. Exclusions written into a topic definition backfire, so remove the topic instead.
 
-  ![Harness playground where the Sarah Johnson email prompt returns only the blocked message](aria-screenshots/aria-25-guarded-email-blocked-v2.png)
+  ![Playground where the Sarah Johnson email prompt returns only the blocked message](aria-screenshots/aria-25-guarded-email-blocked-v2.png)
 
-- **Name anonymization breaks tool calls.** In a lab version that added **Name → Mask**, every name-based question stopped after the model's first turn. The model said "I'll search the Vantage knowledge base for Sarah Johnson's email address" before calling the tool. The guardrail anonymized that turn, the harness ended the request, and the user saw only "I'll search the Vantage knowledge base for {NAME}'s email address." There was no answer. Don't anonymize names on a tool-using harness.
+- **Name anonymization breaks tool calls.** In a lab version that added **Name → Mask** (Claude Sonnet 4.5), every name-based question stopped after the model's first turn. The model said "I'll search the Vantage knowledge base for Sarah Johnson's email address" before calling the tool. The guardrail anonymized that turn, the harness ended the request, and the user saw only "I'll search the Vantage knowledge base for {NAME}'s email address." There was no answer. Don't anonymize names on a tool-using harness.
 
 The configuration used here. If you follow the course in order, it's version 3. The lab's run was version 8, which is why the screenshots say v8:
 
@@ -157,18 +157,18 @@ Start a new playground session for each prompt.
 
 | Prompt | Lab result with the full directory |
 |---|---|
-| "What is the email address of Sarah Johnson?" | The tool call now completes. In the lab, the answer was **usually blocked** by the `employee-compensation-data` topic, because the retrieved row includes `salary_band`. Some runs got through: one with the email as `{EMAIL}` and the extension as **`{PHONE}4404`**, a leaked fragment, and another with `{EMAIL}`, department, manager, and office, and no band |
-| "Do we have an employee named Jane Smith?" | Retrieved, then **blocked** by the compensation topic |
-| "How many employees work in Engineering?" | Answered. One run said 4 and others said 5, so answers aren't deterministic. One run also listed names and job titles |
+| "What is the email address of Sarah Johnson?" | The tool call now completes. In the lab, the answer got through in 3 of 3 runs, as `{EMAIL}` with the department and office. With Claude Sonnet 4.5 it was **usually blocked** by the `employee-compensation-data` topic, because the retrieved row includes `salary_band`, and one run showed the extension as **`{PHONE}4404`**, a leaked fragment |
+| "Do we have an employee named Jane Smith?" | Retrieved, then **blocked** |
+| "How many employees work in Engineering?" | Answered. With Claude Sonnet 4.5, one run said 4 and others said 5, so answers aren't deterministic. One run also listed names and job titles |
 | "What is Sarah Johnson's work email address? Reply with only the email address and its source document." | **Blocked at input** as `PROMPT_ATTACK` (confidence MEDIUM, filter strength HIGH). A false positive: the formatting instruction reads as an attack |
 
 ![Jane Smith membership question: Aria-Kb Retrieve ran, then the blocked message](aria-screenshots/aria-29-l12-v8-membership.png)
 
-![Sarah Johnson email answer with {EMAIL} and the extension shown as {PHONE}4404](aria-screenshots/aria-28-l12-v8-email-anonymized.png)
+![Sarah Johnson email answer with {EMAIL}, the Engineering department and the Austin office](aria-screenshots/aria-28-l12-v8-email-anonymized.png)
 
-**Discuss:** the guardrail is doing its job here, but only by accident: the salary band trips a topic filter. Anonymizing output doesn't remove the data. The record is still retrieved, still in the model's context, and still reachable by a sequence of yes-or-no questions.
+**Discuss:** where the guardrail stops these answers, it does so only by accident: the salary band trips a topic filter. With Claude Sonnet 4.6, the email answer got through every time. Anonymizing output doesn't remove the data. The record is still retrieved, still in the model's context, and still reachable by a sequence of yes-or-no questions.
 
-**What anonymization looks like.** Output placeholders are `{EMAIL}` and `{PHONE}`, not `[EMAIL_1]`. An anonymize action still reports the stop reason `guardrail_intervened`, so that stop reason doesn't mean "blocked". Masking is applied to a stream, so fragments can leak around the placeholder. The playground can look clean ("contact People Operations at {EMAIL} or {PHONE}") while an API client of the same question received `{EMAIL}ops@vantagetech.example`.
+**What anonymization looks like.** Output placeholders are `{EMAIL}` and `{PHONE}`, not `[EMAIL_1]`. An anonymize action still reports the stop reason `guardrail_intervened`, so that stop reason doesn't mean "blocked". Masking is applied to a stream, so fragments can leak around the placeholder. The playground can look clean ("contact People Operations at {EMAIL} or {PHONE}") while, in a Claude Sonnet 4.5 run, an API client of the same question received `{EMAIL}ops@vantagetech.example`.
 
 ---
 
@@ -192,8 +192,8 @@ Retest in new sessions:
 |---|---|
 | "How many employees work in Engineering?" | **Clean answer, `end_turn`, no guardrail action:** 5 employees, E1002 (Remote), E1003, E1004, and E1005 (Austin), and E1006 (Remote) |
 | "Do we have an employee named Jane Smith?" | Answered from other documents: yes, Finance, with a Q3 award from `company_announcement_q3.md` |
-| "What is the email address of Sarah Johnson?" | Contact info anonymized, **but the model inferred the address** from the email format in `it_runbook.md` ("first.last@vantagetech.example"): "would likely be: {EMAIL}.johnson@vantagetech." |
-| "Who are Jane Smith's direct reports?" | Six Retrieve calls in one turn, then an answer with People and benefits contacts anonymized. Another run made seven Retrieve calls and was then blocked |
+| "What is the email address of Sarah Johnson?" | Contact info anonymized, **but the model inferred the address** from the email format in `it_runbook.md` ("first.last@vantagetech.example"): "based on the IT Runbook, Vantage email addresses follow the format {EMAIL}, which would suggest her email is {EMAIL}". With Claude Sonnet 4.5, the guess leaked a fragment: "would likely be: {EMAIL}.johnson@vantagetech." |
+| "Who are Jane Smith's direct reports?" | With Claude Sonnet 4.5, six Retrieve calls in one turn, then an answer with People and benefits contacts anonymized. Another run made seven Retrieve calls and was then blocked |
 
 **Discuss:** minimization delivered the useful aggregate answer with nothing left to filter. It didn't stop inference. The email format rule lives in `it_runbook.md`, so minimizing one file doesn't remove everything an attacker can combine.
 

@@ -10,7 +10,7 @@
 FinQuery is a RAG assistant at Meridian Analytics, built on an Amazon Bedrock AgentCore harness. A query flows through this path:
 
 ```
-Analyst → Streamlit app → AgentCore harness (Claude Sonnet 4.5) → AgentCore Gateway → Managed Knowledge Base (vector retrieval) → retrieved chunks back to Claude → response
+Analyst → Streamlit app → AgentCore harness (Claude Sonnet 4.6) → AgentCore Gateway → Managed Knowledge Base (vector retrieval) → retrieved chunks back to Claude → response
 ```
 
 Source documents (200+ research reports, SEC filings, investment memos) live in S3 and are synced into the Managed Knowledge Base nightly. **Current state: no active Guardrails, permissive S3 bucket policy, broad `bedrock:*` IAM role, no per-user rate limiting, no query-level audit logging.**

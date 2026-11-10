@@ -89,7 +89,7 @@ Open that role in IAM, and check three things:
 
 The lab is a single account without AWS Organizations access. So you can't create or attach this service control policy (SCP). Instead, read it and reason about what it blocks.
 
-Aria's harness saves the model `us.anthropic.claude-sonnet-4-5-20250929-v1:0`. This ID is a US **cross-Region inference profile**, which sends each request to the model in one of several AWS Regions. So an allow-list has to name the inference profile **and** the foundation model it routes to.
+Aria's harness saves the model `us.anthropic.claude-sonnet-4-6`. This ID is a US **cross-Region inference profile**, which sends each request to the model in one of several AWS Regions. So an allow-list has to name the inference profile **and** the foundation model it routes to.
 
 A **condition key** is a value that a policy can check in its `Condition` block, such as the Region a request is sent to. Bedrock has no `bedrock:ModelId` condition key. To restrict models, you can match on either:
 
@@ -105,10 +105,10 @@ A **condition key** is a value that a policy can check in its `Condition` block,
       "Effect": "Deny",
       "Action": "bedrock:InvokeModel*",
       "NotResource": [
-        "arn:aws:bedrock:us-east-1:*:inference-profile/us.anthropic.claude-sonnet-4-5-20250929-v1:0",
-        "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-sonnet-4-5-20250929-v1:0",
-        "arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-sonnet-4-5-20250929-v1:0",
-        "arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-sonnet-4-5-20250929-v1:0",
+        "arn:aws:bedrock:us-east-1:*:inference-profile/us.anthropic.claude-sonnet-4-6",
+        "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-sonnet-4-6",
+        "arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-sonnet-4-6",
+        "arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-sonnet-4-6",
         "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0"
       ]
     },
@@ -127,7 +127,7 @@ A **condition key** is a value that a policy can check in its `Condition` block,
 }
 ```
 
-> **Region note:** A cross-Region inference profile can send a request to a Region other than the one you call. So a Region allow-list must include every Region that the inference profile uses. In the lab, Aria's invocation logs showed inference running in `us-east-2`. A scoped harness role that allowed the Claude Sonnet 4.5 foundation model in `us-east-1`, `us-east-2`, and `us-west-2` kept working. That's why this policy names the foundation model in all three Regions and allows all three Regions. It also allows Titan Text Embeddings V2, which the knowledge base uses to create embeddings during sync. If you leave Titan out, knowledge base sync fails. This policy wasn't tested in the lab, because the lab account can't use AWS Organizations.
+> **Region note:** A cross-Region inference profile can send a request to a Region other than the one you call. So a Region allow-list must include every Region that the inference profile uses. In the lab, Aria's invocation logs showed inference running in `us-east-2`. A scoped harness role that allowed the Claude Sonnet 4.6 foundation model in `us-east-1`, `us-east-2`, and `us-west-2` kept working. That's why this policy names the foundation model in all three Regions and allows all three Regions. It also allows Titan Text Embeddings V2, which the knowledge base uses to create embeddings during sync. If you leave Titan out, knowledge base sync fails. This policy wasn't tested in the lab, because the lab account can't use AWS Organizations.
 
 Ask yourself two questions:
 

@@ -9,7 +9,7 @@ This answer key shows one strong way to complete `starter/STRIDE_ML_TEMPLATE.md`
 A query flows through this path:
 
 ```
-Analyst → Streamlit app → AgentCore harness (Claude Sonnet 4.5) → AgentCore Gateway → Managed Knowledge Base → retrieved chunks back to Claude → response
+Analyst → Streamlit app → AgentCore harness (Claude Sonnet 4.6) → AgentCore Gateway → Managed Knowledge Base → retrieved chunks back to Claude → response
 ```
 
 Source documents (research reports, SEC filings, and investment memos) live in S3 and sync into the Managed Knowledge Base nightly. Some of the research is non-public and falls under information barriers, so not every analyst may see every document.

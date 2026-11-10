@@ -60,7 +60,7 @@ A **harness** is a managed agent. You choose a model, write a system prompt, and
 
 A Managed Knowledge Base runs the vector store for you. There's no OpenSearch collection or S3 Vectors bucket to create, and nothing billed by the hour.
 
-1. Search for **Amazon Bedrock AgentCore** and open it. In the left navigation under **Built-in tools**, choose **Knowledge Bases (KB)**, then **Create Managed KB**.
+1. Search for **Amazon Bedrock AgentCore** and open it. In the left navigation, choose **Knowledge Bases (KB)**, then **Create Managed KB**.
 2. Under **KB details**, enter **KB name** `vantage-aria-kb`.
 3. Expand **Additional configurations**:
    - Under **Embeddings model**, choose **Bedrock embeddings model**. The form's default is **Managed embeddings model**. Choose the Bedrock option so you know exactly which embeddings model the knowledge base uses; the ML-BOM demo records it. **Titan Text Embeddings V2** is selected by default. Keep it.
@@ -80,9 +80,9 @@ A Managed Knowledge Base runs the vector store for you. There's no OpenSearch co
 6. When **Status** is **Available**, check the **Data source** section:
    - If it shows **Data source (0)**, choose **Add**, add the `vantage-documents` data source with the settings from step 4, and then sync it.
    - The first sync can start on its own. If **Sync** is unavailable, a sync is already running. Otherwise, select the `vantage-documents` data source and choose **Sync**.
-7. Wait for the sync to finish. The knowledge base shows a **Last sync time**, and no documents should fail.
+7. Wait for the sync to finish. The data source's **Sync history** shows the job as **Complete**, and no documents should fail.
 
-   ![Knowledge base vantage-aria-kb with status Available and a completed sync of the vantage-documents data source](screenshots/aria-02-kb-synced.png)
+   ![Data source page for vantage-documents in the vantage-aria-kb knowledge base, with one completed sync in Sync history: 10 scanned, 10 added, and 0 failed](screenshots/aria-02-kb-synced.png)
 
 > Note the **Service role** name on this page (`AmazonBedrockExecutionRoleForKnowledgeBase_…`) and the knowledge base ID. The console also turns on application log delivery to `/aws/vendedlogs/bedrock/knowledge-base/APPLICATION_LOGS/<kb-id>`. Check that **Log delivery** lists one entry. If it's empty, choose **Log delivery** → **Add log delivery** → **To Amazon CloudWatch Logs**, keep the prefilled path, and choose **Add**. The ML-BOM and monitoring demos use these.
 
@@ -90,7 +90,7 @@ A Managed Knowledge Base runs the vector store for you. There's no OpenSearch co
 
 ## Step 3: Create the AgentCore Gateway with a knowledge base target
 
-The **Create Gateway** form defaults to settings you need to change. The inbound auth default is **JWT** with **Quick create with Cognito**, the target type default is **MCP server**, and the outbound auth default is **OAuth client**. Change all three as described below.
+The **Create Gateway** form defaults to settings you need to change. The inbound auth default is **Use JSON Web Tokens (JWT)** with **Quick create configurations with Cognito**, and the target type default is **MCP server**. Change both as described below.
 
 1. In **Amazon Bedrock AgentCore**, choose **Gateways** → **Create Gateway**.
 2. Enter **Gateway name** `vantage-aria-gateway`.
@@ -107,7 +107,7 @@ The **Create Gateway** form defaults to settings you need to change. The inbound
 
    ![Gateway target aria-kb configured as an MCP connector target for the vantage-aria-kb knowledge base with Standard retrieval and IAM Role outbound auth](screenshots/aria-03-gateway-kb-target.png)
 
-6. Choose **Create Gateway**. Wait until the gateway **Status** is **Ready** and the `aria-kb` target is also **Ready**. The target takes about 30 seconds longer than the gateway.
+6. Choose **Create Gateway**. **Stay on this page until the console opens the gateway page.** The console adds the target in a follow-up call from this page; if you leave or reload early, the gateway ends up with **Targets (0)**. Wait until the gateway **Status** is **Ready** and the `aria-kb` target is also **Ready**. The target takes about 30 seconds longer than the gateway.
 
    ![Gateway vantage-aria-gateway and its aria-kb target both showing status Ready](screenshots/aria-04-gateway-ready.png)
 
@@ -115,13 +115,13 @@ The **Create Gateway** form defaults to settings you need to change. The inbound
 
 ## Step 4: Create the harness
 
-1. In **Amazon Bedrock AgentCore**, choose **Harness**. On the harnesses table, open the dropdown next to **Quick create Harness** and choose **Advanced create Harness**. Quick create skips settings you need.
+1. In **Amazon Bedrock AgentCore**, choose **Overview**, then **Create agent**. It opens the full **Create Harness** form. Don't use **Start with harness** or **Quick create agent**: they ask only for a name and skip settings you need.
 2. **Harness name:** `VantageAria`. Only letters, numbers, and underscores are allowed (no hyphens), and you can't change the name later.
 3. Expand **Model and system prompt**:
    - **Model source:** **Bedrock**. **API source:** **Bedrock**.
-   - **Model:** the form's default is **Claude Sonnet 4.6** with a **Global** inference profile. Change it: choose the pencil icon, then **Anthropic** → **Claude Sonnet 4.5**. Under **3. Inference**, choose the **US** cross-Region profile (**US Anthropic Claude Sonnet 4.5**), not **Global**. Then choose **Apply**. The ML-BOM, monitoring, and IAM demos all assume the US profile (`us.anthropic.claude-sonnet-4-5-20250929-v1:0`). Claude Haiku 4.5 and Amazon Nova 2 Lite also work. The demo results in this course were recorded with Claude Sonnet 4.5, so other models can give different answers.
+   - **Model:** the form's default is **Claude Sonnet 4.6** with a **Global** inference profile. Keep the model, but change its inference profile: choose the pencil icon, then **Anthropic** → **Claude Sonnet 4.6**. Under **3. Inference**, choose the **US** cross-Region profile (**US Anthropic Claude Sonnet 4.6**), not **Global**. Then choose **Apply**. The ML-BOM, monitoring, and IAM demos all assume the US profile (`us.anthropic.claude-sonnet-4-6`). Claude Haiku 4.5 and Amazon Nova 2 Lite also work. Most demo results in this course were recorded with Claude Sonnet 4.6. Results from another model name it. Other models can give different answers.
 
-     ![Model selection dialog with Anthropic Claude Sonnet 4.5 selected](screenshots/aria-05-harness-select-model.png)
+     ![Model selection dialog with Anthropic Claude Sonnet 4.6 selected](screenshots/aria-05-harness-select-model.png)
 
      > **Don't use Amazon Nova Lite (v1) or Nova Pro (v1).** In testing, both failed on every knowledge base question with `Model produced invalid sequence as part of ToolUse`. Claude 3.7 Sonnet is retired and can't be invoked.
 
@@ -133,25 +133,25 @@ The **Create Gateway** form defaults to settings you need to change. The inbound
 
    - Leave **Parameters** empty. Don't attach a guardrail now; the input sanitization demo compares Aria's behavior before and after the guardrail.
 
-   ![Harness VantageAria with Claude Sonnet 4.5 selected and the Aria system prompt entered](screenshots/aria-06-harness-model-and-prompt.png)
+   ![Harness VantageAria with Claude Sonnet 4.6 selected and the Aria system prompt entered](screenshots/aria-06-harness-model-and-prompt.png)
 
 4. Expand **Memory** and turn **Enable Memory** off. Memory is on by default. Cross-session memory adds cost and the demos don't need it.
 5. Expand **Tools**, turn on **Gateway**, choose **Select gateway** → `vantage-aria-gateway`, and keep **Outbound Auth configurations** set to **IAM role**. Leave **Browser tool**, **Code interpreter tool**, **Remote MCP server**, and **Custom functions** off.
 
    ![Memory disabled and the vantage-aria-gateway selected as the harness Gateway tool with IAM role outbound auth](screenshots/aria-07-harness-memory-tools.png)
 
-6. Expand **Permissions** and keep **Create default role**. Leave **Skills**, **Advanced configurations**, and **Inbound Auth** at their defaults.
-7. Choose **Create Harness**. The harness and its **DEFAULT** endpoint are ready in about a minute. A banner asks you to make sure the IAM execution role has the required permissions. That banner is expected; the default role works for this walkthrough.
+6. Expand **Permissions** and keep **Create default role**. Leave **Skills**, **Lifecycle hooks**, **Advanced configurations**, and **Inbound Auth** at their defaults.
+7. Choose **Create Harness**. The harness and its **DEFAULT** endpoint are ready in about a minute. If the page still shows the provisioning banner after a few minutes, open **Agents**: the harness is listed there once it's created. A banner asks you to make sure the IAM execution role has the required permissions. That banner is expected; the default role works for this walkthrough.
 
-   ![Harness VantageAria details page showing status Ready, the DEFAULT endpoint, the harness ARN, and the IAM role](screenshots/aria-08-harness-ready.png)
+   ![Configuration tab of the VantageAria harness page with status Active, Harness details showing the Harness ARN, and Version details showing the IAM role link](screenshots/aria-08-harness-ready.png)
 
-8. Copy the **Harness ARN** and note the **IAM role** name (`AmazonBedrockAgentCoreHarnessDefaultServiceRole-…`). Later demos use both.
+8. On the harness page, open the **Configuration** tab. Expand **Harness details** and copy the **Harness ARN**. Under **Version details**, note the **IAM role** name (`AmazonBedrockAgentCoreHarnessDefaultServiceRole-…`). Later demos use both.
 
 ---
 
-## Step 5: Test the baseline in the Harness playground
+## Step 5: Test the baseline in the Playground
 
-1. In the left navigation under **Test**, choose **Harness playground**. At the top of the page, select the `VantageAria` harness and its **DEFAULT** endpoint. Leave **Session ID** empty.
+1. In the left navigation, choose **Playground**, select `VantageAria`, and choose **Test Harness**. At the top of the page, keep the **DEFAULT** endpoint. Leave **Session ID** empty.
 2. In **Write a prompt**, enter the following and press **Enter** (or choose the send arrow):
 
    ```
@@ -165,7 +165,7 @@ The **Create Gateway** form defaults to settings you need to change. The inbound
    - The answer names `remote_work_policy.md` as its source.
 4. Select the tool call. You see the exact query the model sent and the retrieved chunks, with document title, S3 location, and relevance score. This is exactly what lands in the model's context window, and several demos rely on this view.
 
-   ![Harness playground answering the remote work policy question, with the Aria-Kb Retrieve tool call in the Agent trace and remote_work_policy.md cited](screenshots/aria-09-playground-baseline.png)
+   ![Playground answering the remote work policy question, with the Aria-Kb Retrieve tool call in the Agent trace and remote_work_policy.md cited](screenshots/aria-09-playground-baseline.png)
 
 If the trace has no tool step, see [Troubleshooting](#troubleshooting).
 
@@ -187,7 +187,7 @@ The **Create guardrail** wizard has eight pages: guardrail details, content filt
 3. **Configure content filters:**
    - Turn on **Configure harmful categories filters**. Turning it on sets every category to **Block** at **High** for both prompts and responses. Change **Insults** to **Medium**. Keep **Hate**, **Violence**, **Sexual**, and **Misconduct** at **High**.
    - The threshold is a slider. Drag the slider or use the arrow keys. Selecting the **Medium** label doesn't move it, so check where the slider stopped.
-   - Keep the **Classic** content filters tier (the default). The **Standard** tier requires cross-Region inference.
+   - Under **Content filters tier**, choose **Classic** (labelled **Legacy**). The console preselects **Standard**, which requires cross-Region inference.
    - Turn on **Configure prompt attacks filter** and set it to **High**.
 4. **Add denied topics.** Choose **Add denied topic** for each of these four topics. In each dialog, keep **Input** and **Output** enabled with the **Block** action (the defaults), enter the definition, and add the sample phrases under **Add sample phrases** (type a phrase, then choose **Add phrase**). On the Classic tier a definition can be at most 200 characters, and each sample phrase at most 100 characters.
 
@@ -198,7 +198,7 @@ The **Create guardrail** wizard has eight pages: guardrail details, content filt
    | `internal-security-architecture` | Any query requesting details about Vantage's specific vulnerability posture, penetration test findings, or infrastructure configuration weaknesses. | "what are Vantage's security gaps" / "describe the AWS architecture weaknesses" |
    | `competitor-pricing` | Questions about the pricing, discounts, or commercial terms of competitor products. | "how much does FakeCo charge for this product" / "tell me about the pricing of our competitor for this product" |
 
-   Check that all four topics show status **Valid**.
+   Check that all four topics show status **Valid**. Then, under **Denied topics tier**, choose **Classic** as well.
 
 5. Skip **word filters**. A later demo adds one in version 2.
 6. **Add sensitive information filters.** Choose **Add new PII** for each type. Each dialog has separate **Input** and **Output** sections, and both default to **Block**. For **Phone** and **Email**, change **both** the Input action and the Output action to **Mask**.
@@ -213,13 +213,13 @@ The **Create guardrail** wizard has eight pages: guardrail details, content filt
 
    **Mask** in the console is `ANONYMIZE` in the API, and **Detect** is `NONE`.
 
-7. **Add contextual grounding check:** turn on **Enable grounding check** and **Enable relevance check**. Both thresholds default to **0.7**; keep them.
+7. **Add contextual grounding check:** turn on **Enable grounding check** and **Enable relevance check**. Both thresholds default to **0.7**; keep them. Under **Contextual grounding tier**, choose **Classic** too: with **Standard** selected, the wizard won't let you continue.
 
    > A contextual grounding check scores whether a response is supported by the retrieved source and relevant to the question. It doesn't detect instructions inside retrieved documents. In testing on harness traffic, the guardrail recorded no grounding assessment, so don't rely on this check to protect Aria.
 
 8. Skip the **Automated Reasoning check** page.
-9. On the review page, check the summary (Insults Medium, the other categories High, 4 denied topics, 5 PII types, grounding and relevance 0.7), then choose **Create guardrail**.
-10. On the guardrail page, choose **Create version**, then **Create**. You now have **version 1**.
+9. On the review page, check the summary (Insults Medium, the other categories High, 4 denied topics, 5 PII types, grounding and relevance 0.7, and **Classic** tiers), then choose **Create guardrail**.
+10. On the guardrail page, choose **Create version**, then **Create version** again in the dialog. You now have **version 1**.
 11. Copy the **guardrail ARN** (`arn:aws:bedrock:us-east-1:<account-id>:guardrail/<guardrail-id>`). The next section uses it.
 
 ### Attaching the guardrail (used by later demos)
@@ -228,7 +228,7 @@ Don't do this now. When a demo tells you to attach the guardrail, follow these s
 
 > **Required:** the console's default harness role does **not** include `bedrock:ApplyGuardrail`. If you attach the guardrail without adding this permission, every request fails with `AccessDeniedException … not authorized to perform: bedrock:ApplyGuardrail`.
 
-1. On the `VantageAria` harness details page, choose the **IAM role** link (`AmazonBedrockAgentCoreHarnessDefaultServiceRole-…`).
+1. On the `VantageAria` harness page, open the **Configuration** tab and, under **Version details**, choose the **IAM role** link (`AmazonBedrockAgentCoreHarnessDefaultServiceRole-…`).
 2. Choose **Add permissions** → **Create inline policy**, switch the editor to **JSON**, and paste the following with your guardrail ARN:
 
    ```json
@@ -246,8 +246,8 @@ Don't do this now. When a demo tells you to attach the guardrail, follow these s
    ```
 
 3. Choose **Next**, name the policy `VantageAriaApplyGuardrail`, and choose **Create policy**.
-4. In **Amazon Bedrock AgentCore** → **Harness**, choose `VantageAria` to open its details page, then choose **Edit**. (The **Edit** button on the harness list stays unavailable until you select a harness.)
-5. In **Model and system prompt** → **Parameters**, choose **Add parameter** (it reads **Edit parameter** if a parameter already exists). The panel that opens already has one empty row under **Additional parameters**. Fill in that row instead of adding another:
+4. In **Amazon Bedrock AgentCore** → **Agents**, choose `VantageAria` to open its page, then choose **Update**.
+5. Expand **Model and system prompt** (the edit page opens with it collapsed). Under **Parameters**, choose **Add parameter** (it reads **Edit parameter** if a parameter already exists). The panel that opens already has one empty row under **Additional parameters**. Fill in that row instead of adding another:
    - **Parameter:** `guardrailConfig`
    - **Value:** `{"guardrailIdentifier":"<guardrail-arn>","guardrailVersion":"1","trace":"enabled"}`
 
@@ -263,7 +263,7 @@ Don't do this now. When a demo tells you to attach the guardrail, follow these s
 
 Create the log group before you turn on logging. The role that Bedrock creates for logging can write to an existing log group, but it can't create one. If the log group doesn't exist, saving the settings fails with **Failed to validate permissions for log group**.
 
-1. Search for **CloudWatch** and open it. In the left navigation, choose **Logs** → **Log groups** → **Create log group**.
+1. Search for **CloudWatch** and open it. In the left navigation, choose **Log Management**, and then choose **Actions** → **Create log group**.
 2. **Log group name:** `/aws/bedrock/vantage-aria/invocations`. Leave the other settings at their defaults and choose **Create**.
 3. Search for **Amazon Bedrock**, open it, and choose **Settings** in the left navigation.
 4. Turn on **Model invocation logging**.
@@ -366,7 +366,7 @@ The harness streams every model turn, including text before and after the tool c
 
 Delete resources in this order. Each delete dialog asks you to type a confirmation word, and the word differs between resources (for example `delete`, `Delete`, `permanently delete`, or the bucket name). Type exactly what the dialog shows.
 
-1. **Harness:** AgentCore → **Harness** → select `VantageAria` → **Delete**
+1. **Harness:** AgentCore → **Agents** → the **⋮** menu on `VantageAria` → **Delete**
 2. **Gateway:** AgentCore → **Gateways** → `vantage-aria-gateway`. Delete the `aria-kb` target first, then delete the gateway
 3. **Knowledge base:** AgentCore → **Knowledge Bases (KB)** → choose `vantage-aria-kb` to open its details page → **Delete**. Deletion can take several minutes
 4. **Guardrail:** Amazon Bedrock → **Guardrails** → `aria-production-guardrails` → **Delete**
@@ -382,9 +382,10 @@ Delete resources in this order. Each delete dialog asks you to type a confirmati
 | Symptom | Cause | Fix |
 |---|---|---|
 | `AccessDeniedException … bedrock:ApplyGuardrail` on every request | Guardrail attached, but the harness role lacks the permission | Add the inline policy in [Attaching the guardrail](#attaching-the-guardrail-used-by-later-demos) |
-| `Model produced invalid sequence as part of ToolUse` | Nova Lite v1 or Nova Pro v1 selected | Edit the harness and switch to Claude Sonnet 4.5, Claude Haiku 4.5, or Nova 2 Lite |
+| `Model produced invalid sequence as part of ToolUse` | Nova Lite v1 or Nova Pro v1 selected | Edit the harness and switch to Claude Sonnet 4.6, Claude Haiku 4.5, or Nova 2 Lite |
 | Answers don't mention any document and the trace has no tool step | Gateway not attached, `aria-kb` target not Ready, or knowledge base not synced | Recheck Step 2.7, Step 3.6, and Step 4.5 |
 | Knowledge base is **Available** but shows **Data source (0)** | You left the create page before the console added the data source | In the knowledge base's **Data source** section, choose **Add**, add `vantage-documents`, and sync |
+| Gateway is **Ready** but shows **Targets (0)** | You left or reloaded the create page before the console added the target | In the gateway's **Targets** section, choose **Add** and add `aria-kb` with the Step 3.5 settings |
 | Gateway target stuck or Failed | The knowledge base isn't a **Managed** KB | The gateway knowledge base connector supports only Managed Knowledge Bases |
 | Upload shows fewer than 10 files | Files were selected individually or the upload was interrupted | Upload the whole `vantage-aria-knowledge-base` folder with **Add folder**, then sync again |
 | Harness name rejected | Name contains hyphens or other symbols | Use `VantageAria` (letters, numbers, and underscores only) |

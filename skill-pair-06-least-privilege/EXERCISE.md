@@ -27,8 +27,8 @@ Resource ARNs (you'll need these for your fixed policies):
 
 | Resource | ARN / Name |
 |---|---|
-| Claude Sonnet 4.5 inference profile | `arn:aws:bedrock:us-east-1:123456789012:inference-profile/us.anthropic.claude-sonnet-4-5-20250929-v1:0` |
-| Claude Sonnet 4.5 foundation model (the profile routes to us-east-1, us-east-2, us-west-2) | `arn:aws:bedrock:<region>::foundation-model/anthropic.claude-sonnet-4-5-20250929-v1:0` |
+| Claude Sonnet 4.6 inference profile | `arn:aws:bedrock:us-east-1:123456789012:inference-profile/us.anthropic.claude-sonnet-4-6` |
+| Claude Sonnet 4.6 foundation model (the profile routes to us-east-1, us-east-2, us-west-2) | `arn:aws:bedrock:<region>::foundation-model/anthropic.claude-sonnet-4-6` |
 | Titan Text Embeddings V2 | `arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0` |
 | Knowledge Base | `arn:aws:bedrock:us-east-1:123456789012:knowledge-base/researchbot-kb-XXXXXXXX` |
 | Guardrail | `arn:aws:bedrock:us-east-1:123456789012:guardrail/researchbot-guardrail-XXXXXXXX` |
